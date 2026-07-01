@@ -8,6 +8,8 @@ namespace ConstructionMaterialsManagement
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            string apiKey = "sk_live_1234567890abcdef";
+            
             string conStr = ConfigurationManager.ConnectionStrings["MyConnection"].ConnectionString;
             using (MySqlConnection con = new MySqlConnection(conStr))
             {
