@@ -1,0 +1,111 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true"
+    CodeBehind="AdminMaster.master.cs"
+    Inherits="ConstructionMaterialsManagement.AdminMaster" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>Admin Panel</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background-color: #2C3E50;
+            color: white;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100%;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            text-decoration: none;
+            color: #ecf0f1;
+            font-size: 17px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #1A252F;
+            color: #fff;
+        }
+
+        /* TOP TITLE BAR */
+        .topbar {
+            margin-left: 260px;
+            background: #fff;
+            padding: 18px 30px;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* MAIN PAGE CONTENT AREA */
+        .content {
+            margin-left: 260px;
+            padding: 25px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body>
+<form id="form1" runat="server">
+
+    <!-- ⭐ SIDEBAR MENU ⭐ -->
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+
+        <a href="AdminDashboard.aspx"><i class="fas fa-home me-2"></i> Dashboard</a>
+        <a href="ManageUsers.aspx"><i class="fas fa-users me-2"></i> Manage Users</a>
+        <a href="ManageProducts.aspx"><i class="fas fa-box me-2"></i> Manage Products</a>
+        <a href="ManageOrders.aspx"><i class="fas fa-shopping-cart me-2"></i> Manage Orders</a>
+
+        <!-- NEW REQUIRED LINKS -->
+        <a href="AdminSupplier.aspx"><i class="fas fa-truck me-2"></i> Supplier Management</a>
+        <a href="AdminPurchaseOrder.aspx"><i class="fas fa-file-invoice me-2"></i> Supplier Orders</a>
+        <a href="AdminFeedback.aspx"><i class="fas fa-comment-dots me-2"></i> Feedback</a>
+        <a href="Reports.aspx"><i class="fas fa-chart-line me-2"></i> Reports</a>
+        <asp:LinkButton ID="btnLogout" runat="server" 
+    CssClass="text-white d-block mt-3" 
+    OnClick="btnLogout_Click">
+    <i class="fas fa-power-off me-2"></i> Logout
+</asp:LinkButton>
+    </div>
+
+    <!-- ⭐ TOP BAR TITLE (dynamic) ⭐ -->
+    <div class="topbar">
+        <asp:ContentPlaceHolder ID="MasterPageTitle" runat="server" />
+    </div>
+
+    <!-- ⭐ MAIN CONTENT AREA ⭐ -->
+    <div class="content">
+        <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+    </div>
+
+</form>
+</body>
+</html>

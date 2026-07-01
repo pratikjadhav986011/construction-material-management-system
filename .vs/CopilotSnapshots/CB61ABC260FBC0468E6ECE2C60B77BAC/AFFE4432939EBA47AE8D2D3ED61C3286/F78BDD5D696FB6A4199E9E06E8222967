@@ -1,0 +1,74 @@
+﻿using System;
+using System.Configuration;
+using System.Web;
+using System.Web.SessionState;
+using MySql.Data.MySqlClient;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Login : System.Web.UI.Page
+    {
+        private readonly string connStr = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // If user is already logged in → go home
+                if (Session["userId"] != null)
+                    Response.Redirect("Home.aspx");
+            }
+        }
+
+        protected void btnLogin_Click(object sender, EventArgs e)
+        {
+            string email = txtEmail.Text.Trim();
+            string pass = txtPassword.Text; // do not Trim password
+
+            try
+            {
+                using (var con = new MySqlConnection(connStr))
+                {
+                    con.Open();
+
+                    string query = "SELECT UserId, Password FROM Users WHERE Email=@email";
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@email", email);
+                        using (var rdr = cmd.ExecuteReader())
+                        {
+                            if (rdr.Read())
+                            {
+                                string storedHash = rdr["Password"]?.ToString();
+                                if (!string.IsNullOrEmpty(storedHash) && BCrypt.Net.BCrypt.Verify(pass, storedHash))
+                                {
+                                    int userId = Convert.ToInt32(rdr["UserId"]);
+
+                                    // Regenerate session id to prevent fixation
+                                    var manager = new SessionIDManager();
+                                    string newId = manager.CreateSessionID(Context);
+                                    bool redirected = false, cookieAdded = false;
+                                    manager.SaveSessionID(Context, newId, out redirected, out cookieAdded);
+
+                                    Session.Clear();
+                                    Session.Abandon();
+                                    Session["userId"] = userId;
+
+                                    Response.Redirect("Home.aspx");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ClientScript.RegisterStartupScript(GetType(), "invalid", "alert('Invalid Email or Password');", true);
+            }
+            catch (Exception)
+            {
+                // log exception server-side
+                ClientScript.RegisterStartupScript(GetType(), "err", "alert('An unexpected error occurred. Please try again later.');", true);
+            }
+        }
+    }
+}

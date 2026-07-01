@@ -1,0 +1,388 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI.WebControls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.IO;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ManageUsers : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+                LoadUsers();
+        }
+
+        private void LoadUsers(string search = "")
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string query = @"
+                SELECT UserID, FullName, Email, Mobile, Address
+                FROM Users
+                WHERE FullName LIKE @search 
+                   OR Email LIKE @search 
+                   OR Mobile LIKE @search
+                ORDER BY UserID DESC";
+
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dt.Columns.Add("RowNum", typeof(int));
+                for (int i = 0; i < dt.Rows.Count; i++)
+                    dt.Rows[i]["RowNum"] = i + 1;
+
+                GridViewUsers.DataSource = dt;
+                GridViewUsers.DataBind();
+            }
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // DOWNLOAD REPORT
+        protected void btnDownloadReport_Click(object sender, EventArgs e)
+        {
+            DataTable dt = GetData("SELECT UserID, FullName, Email, Mobile, Address FROM Users ORDER BY UserID DESC");
+            GeneratePDF("Users_Report", dt);
+        }
+
+        // DOWNLOAD CRYSTAL LEDGER (DataTable pushed into .rpt)
+        protected void btnDownloadCrystal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string rptPath = Server.MapPath("~/Reports/UserLedger.rpt");
+
+                // Prepare the data to push into the report
+                DataTable dt = GetData("SELECT UserID, FullName, Email, Mobile, Address FROM Users ORDER BY UserID DESC");
+
+                if (!File.Exists(rptPath))
+                {
+                    // if .rpt missing, ensure an XSD schema exists to help design the report in Crystal Designer
+                    string xsdPath = Server.MapPath("~/Reports/UserLedger.xsd");
+                    if (!File.Exists(xsdPath))
+                    {
+                        CreateUserLedgerXsd(xsdPath, dt);
+                    }
+
+                    // Fallback: generate a ledger-style PDF immediately so admin can download now
+                    GenerateLedgerPDF(dt);
+                    return;
+                }
+
+                ReportDocument rd = new ReportDocument();
+                rd.Load(rptPath);
+
+                // Push DataTable as the report datasource instead of setting DB logon
+                rd.SetDataSource(dt);
+
+                // Export to PDF stream
+                using (var stream = rd.ExportToStream(ExportFormatType.PortableDocFormat))
+                {
+                    Response.Clear();
+                    Response.Buffer = true;
+                    Response.ContentType = "application/pdf";
+                    Response.AddHeader("Content-Disposition", "attachment; filename=User_Ledger.pdf;");
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.CopyTo(Response.OutputStream);
+                    Response.Flush();
+                    Response.End();
+                }
+
+                rd.Close();
+                rd.Dispose();
+            }
+            catch (Exception ex)
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Error generating crystal report: " + ex.Message + "</div>";
+            }
+        }
+
+        private void CreateUserLedgerXsd(string xsdPath, DataTable dt)
+        {
+            try
+            {
+                // Create a simple DataSet with the table schema and write as XSD for Crystal Designer
+                DataSet ds = new DataSet("UserLedgerDS");
+                DataTable schemaTable = dt.Clone();
+                ds.Tables.Add(schemaTable);
+                ds.WriteXmlSchema(xsdPath);
+            }
+            catch
+            {
+                // ignore schema creation errors
+            }
+        }
+
+        private DataTable GetData(string query)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private void GeneratePDF(string title, DataTable dt)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=" + title + ".pdf");
+
+            Document pdf = new Document(PageSize.A4, 20, 20, 20, 20);
+            PdfWriter.GetInstance(pdf, Response.OutputStream);
+
+            pdf.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+            pdf.Add(new Paragraph("Users Report") { Alignment = Element.ALIGN_CENTER, SpacingAfter = 8f });
+            pdf.Add(new Paragraph("Generated on: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm")) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 12f });
+
+            PdfPTable table = new PdfPTable(dt.Columns.Count);
+            table.WidthPercentage = 100;
+
+            foreach (DataColumn col in dt.Columns)
+                table.AddCell(new PdfPCell(new Phrase(col.ColumnName, headerFont)) { BackgroundColor = new BaseColor(240, 240, 240) });
+
+            foreach (DataRow row in dt.Rows)
+                foreach (var cell in row.ItemArray)
+                    table.AddCell(new Phrase(cell.ToString(), normal));
+
+            pdf.Add(table);
+            pdf.Close();
+
+            Response.End();
+        }
+
+        private void GenerateLedgerPDF(DataRow order, DataTable items)
+        {
+            // This method exists earlier for users invoice; no change here.
+        }
+
+        private void GenerateLedgerPDF(DataTable dt)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=User_Ledger.pdf");
+
+            // Match AdminSupplier ledger: margins and fonts
+            Document pdf = new Document(PageSize.A4.Rotate(), 20, 20, 20, 20);
+            PdfWriter writer = PdfWriter.GetInstance(pdf, Response.OutputStream);
+            writer.PageEvent = new LedgerFooter();
+            pdf.Open();
+
+            // Increased fonts for better readability
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 11);
+
+            // Header
+            PdfPTable head = new PdfPTable(3) { WidthPercentage = 100 };
+            head.SetWidths(new float[] { 20f, 50f, 30f });
+
+            PdfPCell logoCell = new PdfPCell() { Border = Rectangle.NO_BORDER, Padding = 8 };
+            try
+            {
+                string logoPath = Server.MapPath("~/images/logo.png");
+                if (File.Exists(logoPath))
+                {
+                    iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
+                    logo.ScaleToFit(160f, 90f);
+                    logo.Alignment = Element.ALIGN_LEFT;
+                    logoCell.AddElement(logo);
+                }
+            }
+            catch { }
+
+            PdfPTable comp = new PdfPTable(1);
+            comp.AddCell(new PdfPCell(new Phrase("Construction Shop", titleFont)) { Border = Rectangle.NO_BORDER, PaddingBottom = 8 });
+            comp.AddCell(new PdfPCell(new Phrase("User Ledger", headerFont)) { Border = Rectangle.NO_BORDER, PaddingBottom = 6 });
+            comp.AddCell(new PdfPCell(new Phrase("Generated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"), normal)) { Border = Rectangle.NO_BORDER });
+
+            head.AddCell(logoCell);
+            head.AddCell(new PdfPCell(comp) { Border = Rectangle.NO_BORDER, VerticalAlignment = Element.ALIGN_MIDDLE });
+            head.AddCell(new PdfPCell(new Phrase("", normal)) { Border = Rectangle.NO_BORDER });
+
+            pdf.Add(head);
+            pdf.Add(Chunk.NEWLINE);
+
+            // Table with larger cells and padding
+            PdfPTable table = new PdfPTable(5) { WidthPercentage = 100, SpacingBefore = 8f };
+            table.SetWidths(new float[] { 8f, 30f, 28f, 18f, 40f });
+
+            BaseColor hdrBg = new BaseColor(230, 230, 250);
+
+            PdfPCell MakeHeaderCell(string text)
+            {
+                var c = new PdfPCell(new Phrase(text, headerFont)) { BackgroundColor = hdrBg, HorizontalAlignment = Element.ALIGN_CENTER };
+                c.Padding = 10f;
+                c.MinimumHeight = 34f;
+                return c;
+            }
+
+            table.AddCell(MakeHeaderCell("ID"));
+            table.AddCell(MakeHeaderCell("Full Name"));
+            table.AddCell(MakeHeaderCell("Email"));
+            table.AddCell(MakeHeaderCell("Mobile"));
+            table.AddCell(MakeHeaderCell("Address"));
+
+            bool alt = false;
+            foreach (DataRow r in dt.Rows)
+            {
+                BaseColor rowBg = alt ? new BaseColor(250, 250, 255) : BaseColor.WHITE;
+
+                PdfPCell MakeCell(string text, int align = Element.ALIGN_LEFT)
+                {
+                    var c = new PdfPCell(new Phrase(text, normal)) { BackgroundColor = rowBg, HorizontalAlignment = align };
+                    c.Padding = 8f;
+                    c.MinimumHeight = 28f;
+                    return c;
+                }
+
+                table.AddCell(MakeCell(r["UserID"].ToString(), Element.ALIGN_CENTER));
+                table.AddCell(MakeCell(r["FullName"].ToString()));
+                table.AddCell(MakeCell(r["Email"].ToString()));
+                table.AddCell(MakeCell(r["Mobile"].ToString(), Element.ALIGN_CENTER));
+                table.AddCell(MakeCell(r["Address"].ToString()));
+
+                alt = !alt;
+            }
+
+            pdf.Add(table);
+            pdf.Add(Chunk.NEWLINE);
+
+            Paragraph note = new Paragraph("This is a system generated ledger.", normal) { SpacingBefore = 8f };
+            note.Alignment = Element.ALIGN_LEFT;
+            pdf.Add(note);
+
+            pdf.Close();
+            Response.End();
+        }
+
+        // Page event helper for footer (match AdminSupplier)
+        private class LedgerFooter : PdfPageEventHelper
+        {
+            Font fnt = FontFactory.GetFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
+            public override void OnEndPage(PdfWriter writer, Document document)
+            {
+                PdfPTable tbl = new PdfPTable(1);
+                tbl.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+                PdfPCell cell = new PdfPCell(new Phrase("Page " + writer.PageNumber, fnt));
+                cell.Border = Rectangle.NO_BORDER;
+                cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                cell.PaddingTop = 8f;
+                tbl.AddCell(cell);
+                tbl.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 5, writer.DirectContent);
+            }
+        }
+
+        // EDIT MODE
+        protected void GridViewUsers_RowEditing(object sender, System.Web.UI.WebControls.GridViewEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = e.NewEditIndex;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // CANCEL EDIT
+        protected void GridViewUsers_RowCancelingEdit(object sender, System.Web.UI.WebControls.GridViewCancelEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // UPDATE USER
+        protected void GridViewUsers_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+            GridViewRow row = GridViewUsers.Rows[e.RowIndex];
+
+            string fullName = ((TextBox)row.Cells[1].Controls[0]).Text;
+            string email = ((TextBox)row.Cells[2].Controls[0]).Text;
+            string mobile = ((TextBox)row.Cells[3].Controls[0]).Text;
+            string address = ((TextBox)row.Cells[4].Controls[0]).Text;
+
+            // ==== MOBILE VALIDATION ====
+            if (!System.Text.RegularExpressions.Regex.IsMatch(mobile, @"^[0-9]{10}$"))
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Mobile number must be 10 digits only.</div>";
+                return;
+            }
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                // duplicate email check
+                string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email=@Email AND UserID<>@UserID";
+                MySqlCommand checkCmd = new MySqlCommand(checkQuery, con);
+                checkCmd.Parameters.AddWithValue("@Email", email);
+                checkCmd.Parameters.AddWithValue("@UserID", userId);
+
+                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+                {
+                    lblMsg.Text = "<div class='msg msg-error'>Email already registered!</div>";
+                    return;
+                }
+
+                // Update query
+                string update = @"
+        UPDATE Users 
+        SET FullName=@FullName, Email=@Email, Mobile=@Mobile, Address=@Address
+        WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(update, con);
+                cmd.Parameters.AddWithValue("@FullName", fullName);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@Mobile", mobile);
+                cmd.Parameters.AddWithValue("@Address", address);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                cmd.ExecuteNonQuery();
+                lblMsg.Text = "<div class='msg msg-success'>User updated successfully!</div>";
+            }
+
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // DELETE USER
+        protected void GridViewUsers_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string delete = "DELETE FROM Users WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(delete, con);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            lblMsg.Text = "<div class='msg msg-success'>User deleted successfully!</div>";
+            LoadUsers(txtSearch.Text.Trim());
+        }
+    }
+}

@@ -1,0 +1,125 @@
+﻿using System;
+using System.Configuration;
+using System.Data;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using MySql.Data.MySqlClient;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Orders : Page
+    {
+        private readonly string conStr = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadMaterials();
+                BindOrders();
+            }
+        }
+
+        private void LoadMaterials()
+        {
+            using (MySqlConnection con = new MySqlConnection(conStr))
+            {
+                string query = "SELECT MaterialID, MaterialName FROM Materials";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                con.Open();
+                ddlMaterial.DataSource = cmd.ExecuteReader();
+                ddlMaterial.DataTextField = "MaterialName";
+                ddlMaterial.DataValueField = "MaterialID";
+                ddlMaterial.DataBind();
+            }
+
+            ddlMaterial.Items.Insert(0, new ListItem("-- Select Material --", "0"));
+        }
+
+        private void BindOrders()
+        {
+            if (Session["UserID"] == null) return;
+
+            int userID = Convert.ToInt32(Session["UserID"]);
+
+            using (MySqlConnection con = new MySqlConnection(conStr))
+            {
+                string query = @"SELECT o.OrderID, m.MaterialName, o.Quantity, o.TotalPrice, o.OrderDate, o.Status
+                                 FROM Orders o
+                                 INNER JOIN Materials m ON o.MaterialID = m.MaterialID
+                                 WHERE o.UserID = @UserID
+                                 ORDER BY o.OrderDate DESC";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@UserID", userID);
+
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                GridViewOrders.DataSource = dt;
+                GridViewOrders.DataBind();
+            }
+        }
+
+        protected void btnAddOrder_Click(object sender, EventArgs e)
+        {
+            if (ddlMaterial.SelectedValue == "0" || string.IsNullOrEmpty(txtQuantity.Text)) return;
+            if (Session["UserID"] == null)
+            {
+                ShowMessage("You must be logged in to place an order.", true);
+                return;
+            }
+
+            int userID = Convert.ToInt32(Session["UserID"]);
+            int materialID = Convert.ToInt32(ddlMaterial.SelectedValue);
+            int quantity = Convert.ToInt32(txtQuantity.Text);
+
+            using (MySqlConnection con = new MySqlConnection(conStr))
+            {
+                string query = @"INSERT INTO Orders (UserID, MaterialID, Quantity, TotalPrice)
+                                 VALUES (@UserID, @MaterialID, @Quantity,
+                                 (SELECT Price*@Quantity FROM Materials WHERE MaterialID=@MaterialID))";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@UserID", userID);
+                cmd.Parameters.AddWithValue("@MaterialID", materialID);
+                cmd.Parameters.AddWithValue("@Quantity", quantity);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            ShowMessage("Order placed successfully!", false);
+            txtQuantity.Text = "";
+            ddlMaterial.SelectedIndex = 0;
+            BindOrders();
+        }
+
+        protected void GridViewOrders_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        {
+            int orderID = Convert.ToInt32(GridViewOrders.DataKeys[e.RowIndex].Value);
+            using (MySqlConnection con = new MySqlConnection(conStr))
+            {
+                string query = "DELETE FROM Orders WHERE OrderID=@OrderID";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@OrderID", orderID);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            ShowMessage("Order deleted successfully!", false);
+            BindOrders();
+        }
+
+        protected void btnClear_Click(object sender, EventArgs e)
+        {
+            txtQuantity.Text = "";
+            ddlMaterial.SelectedIndex = 0;
+            lblMessage.Visible = false;
+        }
+
+        private void ShowMessage(string message, bool isError)
+        {
+            lblMessage.Text = message;
+            lblMessage.CssClass = isError ? "text-red-600 font-bold" : "text-green-600 font-bold";
+            lblMessage.Visible = true;
+        }
+    }
+}

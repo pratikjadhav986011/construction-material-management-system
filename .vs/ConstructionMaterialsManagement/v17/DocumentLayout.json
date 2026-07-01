@@ -1,0 +1,780 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\ConstructionMaterialsManagement\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|d:\\constructionmaterialsmanagement\\manageproducts.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageproducts.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageproducts.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageproducts.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\payment.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:payment.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\payment.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:payment.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\home.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:home.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\site.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:site.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\login.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:login.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\login.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:login.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageorders.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageorders.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\register.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:register.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\register.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:register.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\terms.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:terms.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\reports.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:reports.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\products.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:products.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\paymentpage.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:paymentpage.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\orderhistory.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:orderhistory.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageusers.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageusers.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\invoice.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:invoice.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\forgotpassword.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:forgotpassword.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\admindashboard.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:admindashboard.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\about.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:about.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\resetpassword.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:resetpassword.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\invoice.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:invoice.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\dbconnect.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:dbconnect.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageusers.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageusers.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\forgotpassword.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:forgotpassword.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\home.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:home.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminlogin.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminlogin.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminlogin.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminlogin.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminsupplier.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminsupplier.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminfeedback.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminfeedback.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageorders.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageorders.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\reports\\ordersreport.xsd||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:reports\\ordersreport.xsd||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminpurchaseorder.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminpurchaseorder.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminpurchaseorder.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminpurchaseorder.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminpurchaseorder.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminpurchaseorder.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\adminsupplier.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:adminsupplier.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\orderhistory.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:orderhistory.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\orderhistory.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:orderhistory.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageorders.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageorders.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\reports\\productsreport.xsd||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:reports\\productsreport.xsd||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\manageproducts.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:manageproducts.aspx.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\site.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:site.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|D:\\ConstructionMaterialsManagement\\feedback.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83AA4123-A568-4705-BD92-8E5AC2460FEF}|ConstructionMaterialsManagement.csproj|solutionrelative:feedback.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ManageProducts.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx.cs",
+              "RelativeDocumentMoniker": "ManageProducts.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx.cs",
+              "RelativeToolTip": "ManageProducts.aspx.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-30T05:37:54.892Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Payment.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Payment.aspx.cs",
+              "RelativeDocumentMoniker": "Payment.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Payment.aspx.cs",
+              "RelativeToolTip": "Payment.aspx.cs",
+              "ViewState": "AgIAAMkAAAAAAAAAAAAmwIMAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T13:10:38.167Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Home.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Home.aspx",
+              "RelativeDocumentMoniker": "Home.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Home.aspx",
+              "RelativeToolTip": "Home.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-15T15:16:56.829Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ManageProducts.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx",
+              "RelativeDocumentMoniker": "ManageProducts.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx",
+              "RelativeToolTip": "ManageProducts.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:54:41.204Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Terms.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Terms.aspx",
+              "RelativeDocumentMoniker": "Terms.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Terms.aspx",
+              "RelativeToolTip": "Terms.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:56:11.873Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ManageOrders.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx",
+              "RelativeDocumentMoniker": "ManageOrders.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx",
+              "RelativeToolTip": "ManageOrders.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-30T04:50:33.964Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Login.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Login.aspx.cs",
+              "RelativeDocumentMoniker": "Login.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Login.aspx.cs",
+              "RelativeToolTip": "Login.aspx.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAuwBQAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T06:26:08.096Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Web.config",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Web.config",
+              "RelativeDocumentMoniker": "Web.config",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Web.config",
+              "RelativeToolTip": "Web.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-02-04T09:10:02.14Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Payment.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Payment.aspx",
+              "RelativeDocumentMoniker": "Payment.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Payment.aspx",
+              "RelativeToolTip": "Payment.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:40:23.075Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "packages.config",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\packages.config",
+              "RelativeDocumentMoniker": "packages.config",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\packages.config",
+              "RelativeToolTip": "packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-02-15T03:54:53.103Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "PaymentPage.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\PaymentPage.aspx",
+              "RelativeDocumentMoniker": "PaymentPage.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\PaymentPage.aspx",
+              "RelativeToolTip": "PaymentPage.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:55:01.564Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ForgotPassword.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ForgotPassword.aspx.cs",
+              "RelativeDocumentMoniker": "ForgotPassword.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ForgotPassword.aspx.cs",
+              "RelativeToolTip": "ForgotPassword.aspx.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAgwBMAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-22T10:03:03.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Site.master",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Site.master",
+              "RelativeDocumentMoniker": "Site.master",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Site.master",
+              "RelativeToolTip": "Site.master",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-29T14:26:09.801Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Register.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Register.aspx",
+              "RelativeDocumentMoniker": "Register.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Register.aspx",
+              "RelativeToolTip": "Register.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T13:26:15.843Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Login.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Login.aspx",
+              "RelativeDocumentMoniker": "Login.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Login.aspx",
+              "RelativeToolTip": "Login.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-15T15:30:57.032Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Reports.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Reports.aspx.cs",
+              "RelativeDocumentMoniker": "Reports.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Reports.aspx.cs",
+              "RelativeToolTip": "Reports.aspx.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T09:12:38.617Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Register.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Register.aspx.cs",
+              "RelativeDocumentMoniker": "Register.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Register.aspx.cs",
+              "RelativeToolTip": "Register.aspx.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAAAIwGwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T06:25:44.915Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Products.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Products.aspx",
+              "RelativeDocumentMoniker": "Products.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Products.aspx",
+              "RelativeToolTip": "Products.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:55:08.636Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "ForgotPassword.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ForgotPassword.aspx",
+              "RelativeDocumentMoniker": "ForgotPassword.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ForgotPassword.aspx",
+              "RelativeToolTip": "ForgotPassword.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-14T13:23:48.86Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Invoice.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Invoice.aspx",
+              "RelativeDocumentMoniker": "Invoice.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Invoice.aspx",
+              "RelativeToolTip": "Invoice.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:29:38.023Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "ManageUsers.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageUsers.aspx",
+              "RelativeDocumentMoniker": "ManageUsers.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageUsers.aspx",
+              "RelativeToolTip": "ManageUsers.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-29T14:41:58.276Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "OrderHistory.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx",
+              "RelativeDocumentMoniker": "OrderHistory.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx",
+              "RelativeToolTip": "OrderHistory.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-29T14:16:45.772Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "About.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\About.aspx",
+              "RelativeDocumentMoniker": "About.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\About.aspx",
+              "RelativeToolTip": "About.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:51:21.176Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "AdminDashboard.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminDashboard.aspx",
+              "RelativeDocumentMoniker": "AdminDashboard.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminDashboard.aspx",
+              "RelativeToolTip": "AdminDashboard.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-15T03:51:26.997Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "ResetPassword.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ResetPassword.aspx.cs",
+              "RelativeDocumentMoniker": "ResetPassword.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ResetPassword.aspx.cs",
+              "RelativeToolTip": "ResetPassword.aspx.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADMAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T06:30:11.04Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Invoice.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Invoice.aspx.cs",
+              "RelativeDocumentMoniker": "Invoice.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Invoice.aspx.cs",
+              "RelativeToolTip": "Invoice.aspx.cs",
+              "ViewState": "AgIAAMYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-15T03:29:40.749Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "ManageUsers.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageUsers.aspx.cs",
+              "RelativeDocumentMoniker": "ManageUsers.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageUsers.aspx.cs",
+              "RelativeToolTip": "ManageUsers.aspx.cs",
+              "ViewState": "AgIAAGYBAAAAAAAAAAAewHwBAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T14:42:36.112Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "AdminLogin.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminLogin.aspx.cs",
+              "RelativeDocumentMoniker": "AdminLogin.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminLogin.aspx.cs",
+              "RelativeToolTip": "AdminLogin.aspx.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAIBZwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T06:30:46.215Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "DBConnect.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\DBConnect.cs",
+              "RelativeDocumentMoniker": "DBConnect.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\DBConnect.cs",
+              "RelativeToolTip": "DBConnect.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAD4vycAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-05T08:59:45.499Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "Home.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Home.aspx.cs",
+              "RelativeDocumentMoniker": "Home.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Home.aspx.cs",
+              "RelativeToolTip": "Home.aspx.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T13:17:54.472Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "ManageOrders.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx.cs",
+              "RelativeDocumentMoniker": "ManageOrders.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx.cs",
+              "RelativeToolTip": "ManageOrders.aspx.cs",
+              "ViewState": "AgIAAP0BAAAAAAAAAAAawAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-30T04:51:41.504Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "AdminLogin.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminLogin.aspx",
+              "RelativeDocumentMoniker": "AdminLogin.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminLogin.aspx",
+              "RelativeToolTip": "AdminLogin.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-02-13T15:28:08.743Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "AdminSupplier.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminSupplier.aspx.cs",
+              "RelativeDocumentMoniker": "AdminSupplier.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminSupplier.aspx.cs",
+              "RelativeToolTip": "AdminSupplier.aspx.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T15:29:08.382Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "AdminFeedback.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminFeedback.aspx.cs",
+              "RelativeDocumentMoniker": "AdminFeedback.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminFeedback.aspx.cs",
+              "RelativeToolTip": "AdminFeedback.aspx.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAuwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T09:12:21.078Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "Feedback.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Feedback.aspx.cs",
+              "RelativeDocumentMoniker": "Feedback.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Feedback.aspx.cs",
+              "RelativeToolTip": "Feedback.aspx.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T09:11:55.063Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "Site.master.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Site.master.cs",
+              "RelativeDocumentMoniker": "Site.master.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Site.master.cs",
+              "RelativeToolTip": "Site.master.cs",
+              "ViewState": "AgIAAHIAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T09:10:25.585Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "ManageOrders.aspx.designer.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx.designer.cs",
+              "RelativeDocumentMoniker": "ManageOrders.aspx.designer.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageOrders.aspx.designer.cs",
+              "RelativeToolTip": "ManageOrders.aspx.designer.cs",
+              "ViewState": "AgIAAGYAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-30T04:57:10.986Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "AdminPurchaseOrder.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx",
+              "RelativeDocumentMoniker": "AdminPurchaseOrder.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx",
+              "RelativeToolTip": "AdminPurchaseOrder.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-29T16:02:53.241Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "OrdersReport.xsd",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Reports\\OrdersReport.xsd",
+              "RelativeDocumentMoniker": "Reports\\OrdersReport.xsd",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Reports\\OrdersReport.xsd",
+              "RelativeToolTip": "Reports\\OrdersReport.xsd",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003579|",
+              "WhenOpened": "2026-01-30T05:10:09.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "ProductsReport.xsd",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\Reports\\ProductsReport.xsd",
+              "RelativeDocumentMoniker": "Reports\\ProductsReport.xsd",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\Reports\\ProductsReport.xsd",
+              "RelativeToolTip": "Reports\\ProductsReport.xsd",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003579|",
+              "WhenOpened": "2026-01-30T05:35:47.87Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "ManageProducts.aspx.designer.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx.designer.cs",
+              "RelativeDocumentMoniker": "ManageProducts.aspx.designer.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\ManageProducts.aspx.designer.cs",
+              "RelativeToolTip": "ManageProducts.aspx.designer.cs",
+              "ViewState": "AgIAAH4AAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-30T05:38:49.71Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "AdminSupplier.aspx",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminSupplier.aspx",
+              "RelativeDocumentMoniker": "AdminSupplier.aspx",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminSupplier.aspx",
+              "RelativeToolTip": "AdminSupplier.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-01-29T15:28:01.245Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "AdminPurchaseOrder.aspx.designer.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx.designer.cs",
+              "RelativeDocumentMoniker": "AdminPurchaseOrder.aspx.designer.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx.designer.cs",
+              "RelativeToolTip": "AdminPurchaseOrder.aspx.designer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T16:07:36.889Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "AdminPurchaseOrder.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx.cs",
+              "RelativeDocumentMoniker": "AdminPurchaseOrder.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\AdminPurchaseOrder.aspx.cs",
+              "RelativeToolTip": "AdminPurchaseOrder.aspx.cs",
+              "ViewState": "AgIAAOsBAAAAAAAAAAD4vwQCAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T16:03:31.724Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "OrderHistory.aspx.designer.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx.designer.cs",
+              "RelativeDocumentMoniker": "OrderHistory.aspx.designer.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx.designer.cs",
+              "RelativeToolTip": "OrderHistory.aspx.designer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T14:17:44.498Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "OrderHistory.aspx.cs",
+              "DocumentMoniker": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx.cs",
+              "RelativeDocumentMoniker": "OrderHistory.aspx.cs",
+              "ToolTip": "D:\\ConstructionMaterialsManagement\\OrderHistory.aspx.cs",
+              "RelativeToolTip": "OrderHistory.aspx.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAIwFIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T14:17:06.441Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

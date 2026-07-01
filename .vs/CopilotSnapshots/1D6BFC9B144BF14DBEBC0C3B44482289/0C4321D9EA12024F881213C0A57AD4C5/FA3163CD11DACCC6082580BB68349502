@@ -1,0 +1,49 @@
+﻿using System;
+using System.Data;
+using MySql.Data.MySqlClient;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace ConstructionMaterialsManagement.User
+{
+    public partial class Orders : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                if (Session["userId"] == null)
+                {
+                    Response.Redirect("Login.aspx");
+                    return;
+                }
+
+                LoadUserOrders();
+            }
+        }
+
+        private void LoadUserOrders()
+        {
+            int userId = Convert.ToInt32(Session["userId"]);
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                string q = @"SELECT OrderID, TotalAmount, OrderDate, Status FROM Orders WHERE UserID=@uid ORDER BY OrderID DESC";
+                MySqlDataAdapter da = new MySqlDataAdapter(q, con);
+                da.SelectCommand.Parameters.AddWithValue("@uid", userId);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                GridViewOrders.DataSource = dt;
+                GridViewOrders.DataBind();
+
+                if (dt.Rows.Count == 0)
+                    lblMessage.Text = "No orders found.";
+            }
+        }
+    }
+}

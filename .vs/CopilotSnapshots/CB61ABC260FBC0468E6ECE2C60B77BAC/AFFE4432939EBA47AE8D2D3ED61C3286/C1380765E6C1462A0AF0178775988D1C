@@ -1,0 +1,64 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Configuration;
+using ConstructionMaterialsManagement.Utilities;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class AdminLogin : System.Web.UI.Page
+    {
+        private readonly string conn = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            // Hide login/profile buttons from master while admin is logging in
+            if (Master.FindControl("loginLink") != null) Master.FindControl("loginLink").Visible = false;
+            if (Master.FindControl("profileLink") != null) Master.FindControl("profileLink").Visible = false;
+        }
+
+        protected void btnAdminLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtAdminUser.Text.Trim();
+            string password = txtAdminPassword.Text; // do not Trim
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                ClientScript.RegisterStartupScript(GetType(), "err", "alert('Please enter username and password');", true);
+                return;
+            }
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    string query = @"SELECT AdminID, Password FROM Admins WHERE Username = @username";
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    using (var rdr = cmd.ExecuteReader())
+                    {
+                        if (rdr.Read())
+                        {
+                            string storedHash = rdr["Password"]?.ToString();
+                            if (!string.IsNullOrEmpty(storedHash) && Security.VerifyPassword(password, storedHash))
+                            {
+                                Session["AdminUser"] = username;
+                                Response.Redirect("AdminDashboard.aspx");
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                ClientScript.RegisterStartupScript(GetType(), "inv", "alert('Invalid Admin Credentials');", true);
+            }
+            catch (Exception)
+            {
+                // log server side
+                ClientScript.RegisterStartupScript(GetType(), "err2", "alert('An unexpected error occurred.');", true);
+            }
+        }
+    }
+}

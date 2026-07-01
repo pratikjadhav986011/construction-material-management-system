@@ -1,0 +1,143 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI.WebControls;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ManageUsers : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+                LoadUsers();
+        }
+
+        private void LoadUsers(string search = "")
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string query = @"
+                SELECT UserID, FullName, Email, Mobile, Address
+                FROM Users
+                WHERE FullName LIKE @search 
+                   OR Email LIKE @search 
+                   OR Mobile LIKE @search
+                ORDER BY UserID DESC";
+
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dt.Columns.Add("RowNum", typeof(int));
+                for (int i = 0; i < dt.Rows.Count; i++)
+                    dt.Rows[i]["RowNum"] = i + 1;
+
+                GridViewUsers.DataSource = dt;
+                GridViewUsers.DataBind();
+            }
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // EDIT MODE
+        protected void GridViewUsers_RowEditing(object sender, System.Web.UI.WebControls.GridViewEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = e.NewEditIndex;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // CANCEL EDIT
+        protected void GridViewUsers_RowCancelingEdit(object sender, System.Web.UI.WebControls.GridViewCancelEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // UPDATE USER
+        // UPDATE USER
+        protected void GridViewUsers_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+            GridViewRow row = GridViewUsers.Rows[e.RowIndex];
+
+            string fullName = ((TextBox)row.Cells[1].Controls[0]).Text;
+            string email = ((TextBox)row.Cells[2].Controls[0]).Text;
+            string mobile = ((TextBox)row.Cells[3].Controls[0]).Text;
+            string address = ((TextBox)row.Cells[4].Controls[0]).Text;
+
+            // ==== MOBILE VALIDATION ====
+            if (!System.Text.RegularExpressions.Regex.IsMatch(mobile, @"^[0-9]{10}$"))
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Mobile number must be 10 digits only.</div>";
+                return;
+            }
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                // duplicate email check
+                string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email=@Email AND UserID<>@UserID";
+                MySqlCommand checkCmd = new MySqlCommand(checkQuery, con);
+                checkCmd.Parameters.AddWithValue("@Email", email);
+                checkCmd.Parameters.AddWithValue("@UserID", userId);
+
+                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+                {
+                    lblMsg.Text = "<div class='msg msg-error'>Email already registered!</div>";
+                    return;
+                }
+
+                // Update query
+                string update = @"
+        UPDATE Users 
+        SET FullName=@FullName, Email=@Email, Mobile=@Mobile, Address=@Address
+        WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(update, con);
+                cmd.Parameters.AddWithValue("@FullName", fullName);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@Mobile", mobile);
+                cmd.Parameters.AddWithValue("@Address", address);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                cmd.ExecuteNonQuery();
+                lblMsg.Text = "<div class='msg msg-success'>User updated successfully!</div>";
+            }
+
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+
+        // DELETE USER
+        protected void GridViewUsers_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string delete = "DELETE FROM Users WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(delete, con);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            lblMsg.Text = "<div class='msg msg-success'>User deleted successfully!</div>";
+            LoadUsers(txtSearch.Text.Trim());
+        }
+    }
+}

@@ -1,0 +1,92 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Configuration;
+using ConstructionMaterialsManagement.Utilities;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ResetPassword : System.Web.UI.Page
+    {
+        private readonly string conn = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // If user came here without OTP, redirect
+                if (Session["ForgotEmail"] == null)
+                {
+                    Response.Redirect("ForgotPassword.aspx");
+                }
+            }
+        }
+
+        protected void btnReset_Click(object sender, EventArgs e)
+        {
+            string newPass = txtNewPassword.Text;
+            string confirmPass = txtConfirmPassword.Text;
+
+            // Check empty
+            if (string.IsNullOrEmpty(newPass) || string.IsNullOrEmpty(confirmPass))
+            {
+                ShowAlert("Please fill all fields!");
+                return;
+            }
+
+            // Check match
+            if (newPass != confirmPass)
+            {
+                ShowAlert("Passwords do not match!");
+                return;
+            }
+
+            string email = Session["ForgotEmail"].ToString();
+
+            // Update password in DB (store hashed password)
+            bool updated = UpdatePassword(email, newPass);
+
+            if (updated)
+            {
+                ShowAlert("Password updated successfully!");
+                Session["ForgotEmail"] = null; // clear session
+                Response.Redirect("Login.aspx");
+            }
+            else
+            {
+                ShowAlert("Error updating password. Try again.");
+            }
+        }
+
+        private bool UpdatePassword(string email, string newPassword)
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    // hash the password using local helper
+                    string hashed = Security.HashPassword(newPassword);
+
+                    string query = "UPDATE Users SET Password=@Password WHERE Email=@Email";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@Password", hashed);
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void ShowAlert(string msg)
+        {
+            string safe = msg.Replace("'", "\\'");
+            Response.Write("<script>alert('" + safe + "');</script>");
+        }
+    }
+}

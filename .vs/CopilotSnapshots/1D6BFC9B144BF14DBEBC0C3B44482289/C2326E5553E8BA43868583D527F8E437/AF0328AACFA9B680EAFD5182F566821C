@@ -1,0 +1,376 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI.WebControls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+using WebListItem = System.Web.UI.WebControls.ListItem;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class AdminPurchaseOrder : System.Web.UI.Page
+    {
+        MySqlConnection con = new MySqlConnection("server=localhost;user=root;password=12345;database=constructiondb");
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadCategories();
+                BindPOGrid();
+                LoadSupplierFilter();
+            }
+        }
+
+        private void LoadCategories()
+        {
+            con.Open();
+            MySqlDataAdapter da = new MySqlDataAdapter("SELECT CategoryID, CategoryName FROM Categories", con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            ddlCategory.DataSource = dt;
+            ddlCategory.DataTextField = "CategoryName";
+            ddlCategory.DataValueField = "CategoryID";
+            ddlCategory.DataBind();
+
+            ddlCategory.Items.Insert(0, new WebListItem("-- Select Category --", "0"));
+            con.Close();
+        }
+
+        protected void ddlCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ddlProduct.Items.Clear();
+            ddlSupplier.Items.Clear();
+            txtPrice.Text = "";
+            txtQty.Text = "";
+            txtTotal.Text = "";
+
+            if (ddlCategory.SelectedValue == "0")
+                return;
+
+            con.Open();
+            MySqlDataAdapter da = new MySqlDataAdapter(
+                "SELECT ProductID, ProductName FROM Products WHERE CategoryID=@cid", con);
+            da.SelectCommand.Parameters.AddWithValue("@cid", ddlCategory.SelectedValue);
+
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            ddlProduct.DataSource = dt;
+            ddlProduct.DataTextField = "ProductName";
+            ddlProduct.DataValueField = "ProductID";
+            ddlProduct.DataBind();
+
+            ddlProduct.Items.Insert(0, new WebListItem("-- Select Product --", "0"));
+            con.Close();
+        }
+
+        protected void ddlProduct_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ddlSupplier.Items.Clear();
+            txtPrice.Text = "";
+            txtTotal.Text = "";
+
+            if (ddlProduct.SelectedValue == "0")
+                return;
+
+            // Load selling price → calculate purchase price (20% less)
+            con.Open();
+            MySqlCommand cmd = new MySqlCommand(
+                "SELECT Price FROM Products WHERE ProductID=@pid", con);
+            cmd.Parameters.AddWithValue("@pid", ddlProduct.SelectedValue);
+
+            object result = cmd.ExecuteScalar();
+            con.Close();
+
+            if (result != null)
+            {
+                decimal sellingPrice = Convert.ToDecimal(result);
+                decimal purchasePrice = sellingPrice * 0.80m;
+
+                txtPrice.Text = purchasePrice.ToString("0.00");
+            }
+
+            // Load suppliers for this product's category
+            con.Open();
+            MySqlDataAdapter da = new MySqlDataAdapter(
+                "SELECT SupplierID, SupplierName FROM Suppliers WHERE CategoryID=@cid", con);
+            da.SelectCommand.Parameters.AddWithValue("@cid", ddlCategory.SelectedValue);
+
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            ddlSupplier.DataSource = dt;
+            ddlSupplier.DataTextField = "SupplierName";
+            ddlSupplier.DataValueField = "SupplierID";
+            ddlSupplier.DataBind();
+
+            ddlSupplier.Items.Insert(0, new WebListItem("-- Select Supplier --", "0"));
+            con.Close();
+        }
+
+        protected void txtQty_TextChanged(object sender, EventArgs e)
+        {
+            string qtyText = txtQty.Text.Trim();
+            string priceText = txtPrice.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(qtyText))
+            {
+                Response.Write("<script>alert('Quantity cannot be empty');</script>");
+                txtQty.Text = "";
+                txtTotal.Text = "";
+                return;
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(qtyText, @"^[0-9]+$"))
+            {
+                Response.Write("<script>alert('Quantity must contain numbers only');</script>");
+                txtQty.Text = "";
+                txtTotal.Text = "";
+                return;
+            }
+
+            decimal qty = Convert.ToDecimal(qtyText);
+            decimal price = Convert.ToDecimal(priceText);
+
+            decimal total = qty * price;
+            txtTotal.Text = total.ToString("0.00");
+        }
+
+        protected void btnCreatePO_Click(object sender, EventArgs e)
+        {
+            if (ddlCategory.SelectedValue == "0" ||
+                ddlProduct.SelectedValue == "0" ||
+                ddlSupplier.SelectedValue == "0" ||
+                txtQty.Text == "" || txtTotal.Text == "")
+            {
+                Response.Write("<script>alert('Please fill all fields');</script>");
+                return;
+            }
+
+            con.Open();
+            MySqlCommand cmd = new MySqlCommand(
+                "INSERT INTO PurchaseOrders (SupplierID, ProductID, Quantity, PurchasePrice, TotalAmount, PO_Date, Status, IsStockUpdated) " +
+                "VALUES (@sup, @prod, @qty, @price, @total, @date, 'Pending Payment', 0); SELECT LAST_INSERT_ID();", con);
+
+            cmd.Parameters.AddWithValue("@sup", ddlSupplier.SelectedValue);
+            cmd.Parameters.AddWithValue("@prod", ddlProduct.SelectedValue);
+            cmd.Parameters.AddWithValue("@qty", txtQty.Text);
+            cmd.Parameters.AddWithValue("@price", txtPrice.Text);
+            cmd.Parameters.AddWithValue("@total", txtTotal.Text);
+            cmd.Parameters.AddWithValue("@date", DateTime.Now);
+
+            int newPOID = Convert.ToInt32(cmd.ExecuteScalar());
+            con.Close();
+
+            Response.Redirect("PaymentPage.aspx?poid=" + newPOID);
+        }
+
+        protected void GridViewPO_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "ReceiveDelivery")
+            {
+                int poID = Convert.ToInt32(e.CommandArgument);
+
+                using (MySqlConnection c = new MySqlConnection(con.ConnectionString))
+                {
+                    c.Open();
+                    // get ProductID, Quantity, IsStockUpdated
+                    MySqlCommand cmd = new MySqlCommand("SELECT ProductID, Quantity, IsStockUpdated FROM PurchaseOrders WHERE PO_ID=@id", c);
+                    cmd.Parameters.AddWithValue("@id", poID);
+                    var rdr = cmd.ExecuteReader();
+                    if (!rdr.Read())
+                    {
+                        rdr.Close();
+                        c.Close();
+                        return;
+                    }
+
+                    int productId = rdr.GetInt32("ProductID");
+                    int qty = rdr.GetInt32("Quantity");
+                    int updated = rdr.GetInt32("IsStockUpdated");
+                    rdr.Close();
+
+                    if (updated == 1)
+                    {
+                        c.Close();
+                        Response.Write("<script>alert('Stock already updated');</script>");
+                        return;
+                    }
+
+                    MySqlCommand cmd2 = new MySqlCommand("UPDATE Products SET Stock = Stock + @qty WHERE ProductID=@pid", c);
+                    cmd2.Parameters.AddWithValue("@qty", qty);
+                    cmd2.Parameters.AddWithValue("@pid", productId);
+                    cmd2.ExecuteNonQuery();
+
+                    MySqlCommand cmd3 = new MySqlCommand("UPDATE PurchaseOrders SET Status='Delivered', IsStockUpdated=1 WHERE PO_ID=@id", c);
+                    cmd3.Parameters.AddWithValue("@id", poID);
+                    cmd3.ExecuteNonQuery();
+
+                    c.Close();
+                }
+
+                Response.Write("<script>alert('Delivery received & stock updated');</script>");
+                BindPOGrid();
+            }
+            else if (e.CommandName == "DownloadInvoice")
+            {
+                int poID = Convert.ToInt32(e.CommandArgument);
+                GenerateInvoicePDF(poID);
+            }
+        }
+
+        private void GenerateInvoicePDF(int poID)
+        {
+            // fetch PO and related data
+            DataTable dt = new DataTable();
+            using (MySqlConnection c = new MySqlConnection(con.ConnectionString))
+            {
+                c.Open();
+                string q = @"SELECT PO.PO_ID, PO.Quantity, PO.PurchasePrice, PO.TotalAmount, PO.PO_Date, PO.Status,
+                                    P.ProductName, S.SupplierName, S.Address AS SupplierAddress
+                             FROM PurchaseOrders PO
+                             JOIN Products P ON PO.ProductID = P.ProductID
+                             JOIN Suppliers S ON PO.SupplierID = S.SupplierID
+                             WHERE PO.PO_ID = @id";
+                MySqlDataAdapter da = new MySqlDataAdapter(q, c);
+                da.SelectCommand.Parameters.AddWithValue("@id", poID);
+                da.Fill(dt);
+                c.Close();
+            }
+
+            if (dt.Rows.Count == 0) return;
+
+            DataRow r = dt.Rows[0];
+
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=Invoice_PO_" + poID + ".pdf");
+
+            Document pdf = new Document(PageSize.A4, 36, 36, 36, 36);
+            PdfWriter.GetInstance(pdf, Response.OutputStream);
+            pdf.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+
+            // Header
+            PdfPTable head = new PdfPTable(2) { WidthPercentage = 100 };
+            head.SetWidths(new float[] { 60f, 40f });
+
+            PdfPCell left = new PdfPCell();
+            left.Border = Rectangle.NO_BORDER;
+            left.AddElement(new Phrase("Construction Shop", titleFont));
+            left.AddElement(new Phrase("Invoice", headerFont));
+
+            PdfPCell right = new PdfPCell();
+            right.Border = Rectangle.NO_BORDER;
+            right.AddElement(new Phrase("Invoice #: " + r["PO_ID"].ToString(), normal));
+            right.AddElement(new Phrase("Date: " + Convert.ToDateTime(r["PO_Date"]).ToString("yyyy-MM-dd HH:mm"), normal));
+            right.AddElement(new Phrase("Status: " + r["Status"].ToString(), normal));
+            right.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+            head.AddCell(left);
+            head.AddCell(right);
+            pdf.Add(head);
+
+            pdf.Add(Chunk.NEWLINE);
+
+            // Supplier info
+            PdfPTable sup = new PdfPTable(1) { WidthPercentage = 100 };
+            sup.AddCell(new PdfPCell(new Phrase("Supplier: " + r["SupplierName"].ToString(), normal)) { Border = Rectangle.NO_BORDER });
+            sup.AddCell(new PdfPCell(new Phrase(r["SupplierAddress"].ToString(), normal)) { Border = Rectangle.NO_BORDER });
+            pdf.Add(sup);
+
+            pdf.Add(Chunk.NEWLINE);
+
+            // Items table
+            PdfPTable items = new PdfPTable(4) { WidthPercentage = 100 };
+            items.SetWidths(new float[] { 60f, 10f, 15f, 15f });
+            items.AddCell(new PdfPCell(new Phrase("Description", headerFont)) { BackgroundColor = new BaseColor(230,230,250) });
+            items.AddCell(new PdfPCell(new Phrase("Qty", headerFont)) { BackgroundColor = new BaseColor(230,230,250), HorizontalAlignment = Element.ALIGN_CENTER });
+            items.AddCell(new PdfPCell(new Phrase("Unit Price", headerFont)) { BackgroundColor = new BaseColor(230,230,250), HorizontalAlignment = Element.ALIGN_RIGHT });
+            items.AddCell(new PdfPCell(new Phrase("Total", headerFont)) { BackgroundColor = new BaseColor(230,230,250), HorizontalAlignment = Element.ALIGN_RIGHT });
+
+            string desc = r["ProductName"].ToString();
+            int qty = Convert.ToInt32(r["Quantity"]);
+            decimal unit = Convert.ToDecimal(r["PurchasePrice"]);
+            decimal total = Convert.ToDecimal(r["TotalAmount"]);
+
+            items.AddCell(new PdfPCell(new Phrase(desc, normal)));
+            items.AddCell(new PdfPCell(new Phrase(qty.ToString(), normal)) { HorizontalAlignment = Element.ALIGN_CENTER });
+            items.AddCell(new PdfPCell(new Phrase(unit.ToString("0.00"), normal)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+            items.AddCell(new PdfPCell(new Phrase(total.ToString("0.00"), normal)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+            pdf.Add(items);
+
+            // Totals
+            PdfPTable totals = new PdfPTable(2) { WidthPercentage = 40, HorizontalAlignment = Element.ALIGN_RIGHT };
+            totals.AddCell(new PdfPCell(new Phrase("Grand Total", headerFont)) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT });
+            totals.AddCell(new PdfPCell(new Phrase(total.ToString("0.00"), headerFont)) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT });
+            pdf.Add(Chunk.NEWLINE);
+            pdf.Add(totals);
+
+            pdf.Close();
+            Response.End();
+        }
+
+        // Footer event helper
+        private class PurchaseOrderFooter : PdfPageEventHelper
+        {
+            Font fnt = FontFactory.GetFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
+            public override void OnEndPage(PdfWriter writer, Document document)
+            {
+                PdfPTable tbl = new PdfPTable(1);
+                tbl.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+                PdfPCell cell = new PdfPCell(new Phrase("Page " + writer.PageNumber, fnt));
+                cell.Border = Rectangle.NO_BORDER;
+                cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                cell.PaddingTop = 6f;
+                tbl.AddCell(cell);
+                tbl.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 5, writer.DirectContent);
+            }
+        }
+
+        private void BindPOGrid()
+        {
+            con.Open();
+            string query = @"SELECT PO.PO_ID, S.SupplierName, P.ProductName, PO.Quantity,
+                             PO.PurchasePrice, PO.TotalAmount, PO.PO_Date, PO.Status
+                             FROM PurchaseOrders PO
+                             JOIN Suppliers S ON PO.SupplierID = S.SupplierID
+                             JOIN Products P ON PO.ProductID = P.ProductID
+                             ORDER BY PO.PO_ID DESC";
+
+            MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            GridViewPO.DataSource = dt;
+            GridViewPO.DataBind();
+            con.Close();
+        }
+
+        protected void btnDownloadSupplierPO_Click(object sender, EventArgs e)
+        {
+            if (ddlSupplierFilter.SelectedValue == "0")
+            {
+                lblPOMsg.Text = "<div class='msg msg-error'>Please select a supplier.</div>";
+                return;
+            }
+
+            int supplierId = Convert.ToInt32(ddlSupplierFilter.SelectedValue);
+            DataTable dt = GetPOsBySupplier(supplierId);
+
+            if (dt.Rows.Count == 0)
+            {
+                lblPOMsg.Text = "<div class='msg msg-error'>No purchase orders found for selected supplier.</div>";
+                return;
+            }
+
+            GenerateSupplierPOReport(dt, ddlSupplierFilter.SelectedItem.Text);
+        }
+    }
+}

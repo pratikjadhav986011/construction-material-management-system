@@ -1,0 +1,109 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Configuration;
+using ConstructionMaterialsManagement.Utilities;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Register : System.Web.UI.Page
+    {
+        private readonly string conn = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                UpdateLoginProfileVisibility();
+            }
+        }
+
+        private void UpdateLoginProfileVisibility()
+        {
+            var login = Master.FindControl("loginLink");
+            var profile = Master.FindControl("profileLink");
+
+            if (login == null || profile == null)
+                return;
+
+            var loginLink = (System.Web.UI.HtmlControls.HtmlAnchor)login;
+            var profileLink = (System.Web.UI.HtmlControls.HtmlAnchor)profile;
+
+            loginLink.Visible = Session["userId"] == null;
+            profileLink.Visible = Session["userId"] != null;
+        }
+
+        protected void btnRegister_Click(object sender, EventArgs e)
+        {
+            // STOP if validators failed
+            if (!Page.IsValid)
+                return;
+
+            string name = txtName.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string mobile = txtMobile.Text.Trim();
+            string password = txtPassword.Text; // preserve whitespace if any
+            string address = txtAddress.Text.Trim();
+
+            // VALIDATE ADDRESS (cannot be only numbers)
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtAddress.Text.Trim(), @"^\d+$"))
+            {
+                ClientScript.RegisterStartupScript(GetType(), "err", "alert('Address cannot be only numbers. Please enter a valid address.');", true);
+                return;
+            }
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    // CHECK IF EMAIL ALREADY EXISTS
+                    string checkEmail = "SELECT COUNT(*) FROM Users WHERE Email=@e";
+                    MySqlCommand checkCmd = new MySqlCommand(checkEmail, con);
+                    checkCmd.Parameters.AddWithValue("@e", email);
+
+                    int exists = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                    if (exists > 0)
+                    {
+                        ClientScript.RegisterStartupScript(GetType(), "exists", "alert('This email is already registered. Please try another email.');", true);
+                        return;
+                    }
+
+                    // Hash password using PBKDF2 helper
+                    string hashed = Security.HashPassword(password);
+
+                    // INSERT NEW USER (store hash in Password column)
+                    string query = @"INSERT INTO Users 
+                    (FullName, Email, Mobile, Password, Address)
+                    VALUES (@name, @email, @mobile, @password, @address)";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@email", email);
+                    cmd.Parameters.AddWithValue("@mobile", mobile);
+                    cmd.Parameters.AddWithValue("@password", hashed);
+                    cmd.Parameters.AddWithValue("@address", address);
+
+                    int rows = cmd.ExecuteNonQuery();
+
+                    if (rows > 0)
+                    {
+                        ClientScript.RegisterStartupScript(GetType(), "ok", "alert('Registration Successful!'); window.location='Login.aspx';", true);
+                    }
+                    else
+                    {
+                        ClientScript.RegisterStartupScript(GetType(), "err2", "alert('Registration Failed');", true);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // log server side; show generic message
+                ClientScript.RegisterStartupScript(GetType(), "err3", "alert('An unexpected error occurred. Please try again later.');", true);
+            }
+        }
+
+    }
+}
+

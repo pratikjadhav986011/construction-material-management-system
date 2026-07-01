@@ -1,0 +1,153 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI.WebControls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+using WebListItem = System.Web.UI.WebControls.ListItem;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class AdminPurchaseOrder : System.Web.UI.Page
+    {
+        MySqlConnection con = new MySqlConnection("server=localhost;user=root;password=12345;database=constructiondb");
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadCategories();
+                BindPOGrid();
+                LoadSupplierFilter();
+            }
+        }
+
+        private void LoadCategories()
+        {
+            con.Open();
+            MySqlDataAdapter da = new MySqlDataAdapter("SELECT CategoryID, CategoryName FROM Categories", con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            ddlCategory.DataSource = dt;
+            ddlCategory.DataTextField = "CategoryName";
+            ddlCategory.DataValueField = "CategoryID";
+            ddlCategory.DataBind();
+
+            ddlCategory.Items.Insert(0, new WebListItem("-- Select Category --", "0"));
+            con.Close();
+        }
+
+        private void LoadSupplierFilter()
+        {
+            con.Open();
+            MySqlDataAdapter da = new MySqlDataAdapter("SELECT SupplierID, SupplierName FROM Suppliers ORDER BY SupplierName", con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            ddlSupplierFilter.DataSource = dt;
+            ddlSupplierFilter.DataValueField = "SupplierID";
+            ddlSupplierFilter.DataTextField = "SupplierName";
+            ddlSupplierFilter.DataBind();
+            ddlSupplierFilter.Items.Insert(0, new WebListItem("-- Select Supplier --", "0"));
+            con.Close();
+        }
+
+        protected void btnDownloadSupplierPO_Click(object sender, EventArgs e)
+        {
+            if (ddlSupplierFilter.SelectedValue == "0")
+            {
+                lblPOMsg.Text = "<div class='msg msg-error'>Please select a supplier.</div>";
+                return;
+            }
+
+            int supplierId = Convert.ToInt32(ddlSupplierFilter.SelectedValue);
+            DataTable dt = GetPOsBySupplier(supplierId);
+
+            if (dt.Rows.Count == 0)
+            {
+                lblPOMsg.Text = "<div class='msg msg-error'>No purchase orders found for selected supplier.</div>";
+                return;
+            }
+
+            GenerateSupplierPOReport(dt, ddlSupplierFilter.SelectedItem.Text);
+        }
+
+        private DataTable GetPOsBySupplier(int supplierId)
+        {
+            con.Open();
+            string q = @"SELECT PO.PO_ID, S.SupplierName, P.ProductName, PO.Quantity, PO.PurchasePrice, PO.TotalAmount, PO.PO_Date, PO.Status
+                        FROM PurchaseOrders PO
+                        JOIN Suppliers S ON PO.SupplierID = S.SupplierID
+                        JOIN Products P ON PO.ProductID = P.ProductID
+                        WHERE PO.SupplierID = @sid
+                        ORDER BY PO.PO_ID DESC";
+            MySqlDataAdapter da = new MySqlDataAdapter(q, con);
+            da.SelectCommand.Parameters.AddWithValue("@sid", supplierId);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            con.Close();
+            return dt;
+        }
+
+        private void GenerateSupplierPOReport(DataTable dt, string supplierName)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=Supplier_PO_Report_" + supplierName + ".pdf");
+
+            Document pdf = new Document(PageSize.A4.Rotate(), 20, 20, 20, 20);
+            PdfWriter writer = PdfWriter.GetInstance(pdf, Response.OutputStream);
+            pdf.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+            // Header
+            PdfPTable head = new PdfPTable(2) { WidthPercentage = 100 };
+            head.SetWidths(new float[] { 70f, 30f });
+            head.AddCell(new PdfPCell(new Phrase("Supplier Purchase Orders", titleFont)) { Border = Rectangle.NO_BORDER });
+            head.AddCell(new PdfPCell(new Phrase("Supplier: " + supplierName + "\nGenerated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"), normal)) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT });
+            pdf.Add(head);
+            pdf.Add(Chunk.NEWLINE);
+
+            PdfPTable table = new PdfPTable(6) { WidthPercentage = 100 };
+            table.SetWidths(new float[] { 8f, 30f, 30f, 12f, 12f, 20f });
+
+            BaseColor hdrBg = new BaseColor(230, 230, 250);
+            table.AddCell(new PdfPCell(new Phrase("PO ID", headerFont)) { BackgroundColor = hdrBg });
+            table.AddCell(new PdfPCell(new Phrase("Product", headerFont)) { BackgroundColor = hdrBg });
+            table.AddCell(new PdfPCell(new Phrase("Supplier", headerFont)) { BackgroundColor = hdrBg });
+            table.AddCell(new PdfPCell(new Phrase("Qty", headerFont)) { BackgroundColor = hdrBg });
+            table.AddCell(new PdfPCell(new Phrase("Total (₹)", headerFont)) { BackgroundColor = hdrBg });
+            table.AddCell(new PdfPCell(new Phrase("Date / Status", headerFont)) { BackgroundColor = hdrBg });
+
+            decimal grandTotal = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                table.AddCell(new PdfPCell(new Phrase(r["PO_ID"].ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(r["ProductName"].ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(r["SupplierName"].ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(r["Quantity"].ToString(), normal)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(Convert.ToDecimal(r["TotalAmount"]).ToString("0.00"), normal)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+                table.AddCell(new PdfPCell(new Phrase(Convert.ToDateTime(r["PO_Date"]).ToString("yyyy-MM-dd HH:mm") + "\n" + r["Status"].ToString(), normal)));
+
+                grandTotal += Convert.ToDecimal(r["TotalAmount"]);
+            }
+
+            pdf.Add(table);
+            pdf.Add(Chunk.NEWLINE);
+
+            PdfPTable totals = new PdfPTable(2) { WidthPercentage = 40, HorizontalAlignment = Element.ALIGN_RIGHT };
+            totals.AddCell(new PdfPCell(new Phrase("Grand Total", headerFont)) { Border = Rectangle.NO_BORDER });
+            totals.AddCell(new PdfPCell(new Phrase(grandTotal.ToString("0.00"), headerFont)) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+            pdf.Add(totals);
+
+            pdf.Close();
+            Response.End();
+        }
+
+        // Rest of class remains unchanged
+    }
+}

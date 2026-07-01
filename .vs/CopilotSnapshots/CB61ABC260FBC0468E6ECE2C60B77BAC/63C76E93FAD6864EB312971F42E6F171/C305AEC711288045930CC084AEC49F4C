@@ -1,0 +1,535 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.IO;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ManageOrders : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            // clear any previous messages
+            if (lblMsg != null) lblMsg.Text = string.Empty;
+
+            if (!IsPostBack)
+            {
+                LoadOrders();
+                LoadStats();
+            }
+        }
+
+        private void LoadOrders()
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                string query = @"
+                    SELECT 
+                        o.OrderID,
+                        o.TotalAmount,
+                        o.OrderDate,
+                        o.Status,
+                        u.FullName,
+                        u.Email,
+                        u.Mobile
+                    FROM Orders o
+                    JOIN Users u ON o.UserID = u.UserID
+                    ORDER BY o.OrderID DESC";
+
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                gvOrders.DataSource = dt;
+                gvOrders.DataBind();
+            }
+        }
+
+        private void LoadStats()
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                lblTotalOrders.Text = CountQuery(con, "SELECT COUNT(*) FROM Orders").ToString();
+
+                lblPending.Text = CountQuery(con,
+                    "SELECT COUNT(*) FROM Orders WHERE Status='Pending'").ToString();
+
+                // count BOTH Shipped and Paid as 'Shipped' for the box
+                lblShipped.Text = CountQuery(con,
+                    "SELECT COUNT(*) FROM Orders WHERE Status='Shipped' OR Status='Paid'").ToString();
+
+                lblDelivered.Text = CountQuery(con,
+                    "SELECT COUNT(*) FROM Orders WHERE Status='Delivered'").ToString();
+            }
+        }
+
+
+        private int CountQuery(MySqlConnection con, string q)
+        {
+            MySqlCommand cmd = new MySqlCommand(q, con);
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
+        protected void gvOrders_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int orderID = Convert.ToInt32(e.CommandArgument);
+
+            if (e.CommandName == "viewOrder")
+            {
+                LoadOrderItems(orderID);
+
+                // 100% Working Bootstrap Modal Script
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    this.GetType(),
+                    "ShowModal",
+                    "setTimeout(function(){ var m = new bootstrap.Modal(document.getElementById('itemsModal')); m.show(); }, 150);",
+                    true);
+            }
+            else if (e.CommandName == "changeStatus")
+            {
+                UpdateStatus(orderID);
+                LoadOrders();
+                LoadStats();
+            }
+            else if (e.CommandName == "deleteOrder")
+            {
+                DeleteOrder(orderID);
+                LoadOrders();
+                LoadStats();
+            }
+        }
+
+        private void LoadOrderItems(int orderID)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                string query = @"
+                    SELECT p.ProductName, oi.Quantity, oi.Price
+                    FROM OrderItems oi
+                    JOIN Products p ON oi.ProductID = p.ProductID
+                    WHERE oi.OrderID = @id";
+
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+                da.SelectCommand.Parameters.AddWithValue("@id", orderID);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                gvOrderItems.DataSource = dt;
+                gvOrderItems.DataBind();
+            }
+        }
+
+        private void UpdateStatus(int orderID)
+        {
+            string current = "Pending";
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(
+                    "SELECT Status FROM Orders WHERE OrderID=@id", con);
+                cmd.Parameters.AddWithValue("@id", orderID);
+
+                object val = cmd.ExecuteScalar();
+                if (val != null)
+                    current = val.ToString();
+            }
+
+            // Determine next status based on the original value.
+            string next;
+
+            if (current == "Pending")
+                next = "Shipped";
+            else if (current == "Paid")
+                next = "Shipped"; // treat Paid as moving to Shipped on next click
+            else if (current == "Shipped")
+                next = "Delivered";
+            else
+                next = "Delivered"; // keep Delivered as final state
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(
+                    "UPDATE Orders SET Status=@s WHERE OrderID=@id", con);
+                cmd.Parameters.AddWithValue("@s", next);
+                cmd.Parameters.AddWithValue("@id", orderID);
+                cmd.ExecuteNonQuery();
+            }
+        }
+    
+
+        private void DeleteOrder(int orderID)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                MySqlCommand cmd1 = new MySqlCommand("DELETE FROM OrderItems WHERE OrderID=@id", con);
+                cmd1.Parameters.AddWithValue("@id", orderID);
+                cmd1.ExecuteNonQuery();
+
+                MySqlCommand cmd2 = new MySqlCommand("DELETE FROM Orders WHERE OrderID=@id", con);
+                cmd2.Parameters.AddWithValue("@id", orderID);
+                cmd2.ExecuteNonQuery();
+            }
+        }
+
+        // DOWNLOAD REPORT - Crystal Report (SAP) with filters and order items
+        protected void btnDownloadReport_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string rptPath = Server.MapPath("~/Reports/OrdersReport.rpt");
+
+                DateTime? from = null, to = null;
+                if (!string.IsNullOrEmpty(txtFrom.Text)) from = DateTime.Parse(txtFrom.Text);
+                if (!string.IsNullOrEmpty(txtTo.Text)) to = DateTime.Parse(txtTo.Text);
+                string status = ddlStatusFilterReport.SelectedValue; // empty = all
+
+                DataTable dtOrders = GetOrdersData(from, to, status);
+                DataTable dtItems = GetOrderItemsData(from, to, status);
+
+                // Prepare DataSet containing both tables for use in Crystal (subreport or main+detail)
+                DataSet ds = new DataSet("OrdersDS");
+                dtOrders.TableName = "Orders";
+                dtItems.TableName = "OrderItems";
+                ds.Tables.Add(dtOrders.Copy());
+                ds.Tables.Add(dtItems.Copy());
+
+                if (!File.Exists(rptPath))
+                {
+                    // Create an XSD schema so the report can be designed in Crystal if needed
+                    string xsdPath = Server.MapPath("~/Reports/OrdersReport.xsd");
+                    if (!File.Exists(xsdPath))
+                        CreateOrdersXsd(xsdPath, ds);
+
+                    // Fallback: generate a PDF immediately so admin can download now
+                    try
+                    {
+                        GenerateFallbackPdf(ds);
+                        // no UI message when fallback successfully downloaded
+                        return;
+                    }
+                    catch (Exception exFallback)
+                    {
+                        // show helpful message only if fallback also fails
+                        lblMsg.Text = "<div class='msg msg-error'>Crystal report file not found and fallback generation failed: " + exFallback.Message + "</div>";
+                        return;
+                    }
+                }
+
+                ReportDocument rd = new ReportDocument();
+                rd.Load(rptPath);
+
+                // Push DataSet as the report datasource instead of setting DB logon
+                rd.SetDataSource(ds);
+
+                // Export to PDF stream (Crystal will render the report)
+                using (var stream = rd.ExportToStream(ExportFormatType.PortableDocFormat))
+                {
+                    Response.Clear();
+                    Response.Buffer = true;
+                    Response.ContentType = "application/pdf";
+                    Response.AddHeader("Content-Disposition", "attachment; filename=Orders_Report.pdf;");
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.CopyTo(Response.OutputStream);
+                    Response.Flush();
+                    Response.End();
+                }
+
+                rd.Close();
+                rd.Dispose();
+            }
+            catch (Exception ex)
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Error generating crystal report: " + ex.Message + "</div>";
+            }
+        }
+
+        // Fallback PDF generator using iTextSharp when .rpt not present
+        private void GenerateFallbackPdf(DataSet ds)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=Orders_Report_Fallback.pdf");
+
+            // Page event for footer
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+            Document pdf = new Document(PageSize.A4, 36, 36, 90, 60); // leave space for header/footer
+            PdfWriter writer = PdfWriter.GetInstance(pdf, Response.OutputStream);
+            writer.PageEvent = new PdfFooter();
+
+            pdf.Open();
+
+            try
+            {
+                // Header: logo + company info
+                PdfPTable head = new PdfPTable(2) { WidthPercentage = 100 };
+                head.SetWidths(new float[] { 25f, 75f });
+
+                PdfPCell logoCell = new PdfPCell() { Border = Rectangle.NO_BORDER, Padding = 6 };
+                try
+                {
+                    string logoPath = Server.MapPath("~/images/logo.png");
+                    if (File.Exists(logoPath))
+                    {
+                        iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
+                        logo.ScaleToFit(140f, 80f);
+                        logo.Alignment = Element.ALIGN_LEFT;
+                        logoCell.AddElement(logo);
+                    }
+                    else
+                    {
+                        // placeholder
+                        logoCell.AddElement(new Phrase("", normal));
+                    }
+                }
+                catch { }
+
+                PdfPTable comp = new PdfPTable(1);
+                comp.DefaultCell.Border = Rectangle.NO_BORDER;
+                comp.AddCell(new PdfPCell(new Phrase("Construction Shop Pvt. Ltd.", titleFont)) { Border = Rectangle.NO_BORDER, PaddingBottom = 6f });
+                comp.AddCell(new PdfPCell(new Phrase("123 Builder Lane, Industrial Area, City - ZIP", normal)) { Border = Rectangle.NO_BORDER, PaddingBottom = 2f });
+                comp.AddCell(new PdfPCell(new Phrase("Phone: +91 98765 43210 | Email: info@constructionshop.com", normal)) { Border = Rectangle.NO_BORDER, PaddingBottom = 2f });
+                comp.AddCell(new PdfPCell(new Phrase("GSTIN: 12ABCDE3456F7Z8", normal)) { Border = Rectangle.NO_BORDER });
+
+                head.AddCell(logoCell);
+                head.AddCell(new PdfPCell(comp) { Border = Rectangle.NO_BORDER, VerticalAlignment = Element.ALIGN_MIDDLE });
+
+                pdf.Add(head);
+
+                // Report Title and filter info
+                Paragraph rptTitle = new Paragraph("Purchase Orders Report", titleFont) { Alignment = Element.ALIGN_CENTER, SpacingBefore = 8f, SpacingAfter = 6f };
+                pdf.Add(rptTitle);
+
+                string range = "";
+                if (txtFrom != null && !string.IsNullOrEmpty(txtFrom.Text)) range += "From: " + txtFrom.Text + " ";
+                if (txtTo != null && !string.IsNullOrEmpty(txtTo.Text)) range += "To: " + txtTo.Text + " ";
+                string statusText = (ddlStatusFilterReport != null && !string.IsNullOrEmpty(ddlStatusFilterReport.SelectedValue)) ? ddlStatusFilterReport.SelectedValue : "All";
+
+                Paragraph meta = new Paragraph("Generated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm") + "    Status: " + statusText + "    " + range, normal) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 10f };
+                pdf.Add(meta);
+
+                DataTable orders = ds.Tables.Contains("Orders") ? ds.Tables["Orders"] : ds.Tables[0];
+                DataTable items = ds.Tables.Contains("OrderItems") ? ds.Tables["OrderItems"] : (ds.Tables.Count > 1 ? ds.Tables[1] : null);
+
+                // Orders loop
+                foreach (DataRow o in orders.Rows)
+                {
+                    // Order summary box
+                    PdfPTable info = new PdfPTable(4) { WidthPercentage = 100, SpacingBefore = 6f };
+                    info.SetWidths(new float[] { 15f, 35f, 15f, 35f });
+
+                    PdfPCell MakeHeaderCell(string txt) => new PdfPCell(new Phrase(txt, headerFont)) { BackgroundColor = new BaseColor(240, 240, 240), Padding = 6 };
+                    PdfPCell MakeCell(string txt) => new PdfPCell(new Phrase(txt, normal)) { Padding = 6 };
+
+                    info.AddCell(MakeHeaderCell("Order ID"));
+                    info.AddCell(MakeCell(o["OrderID"].ToString()));
+                    info.AddCell(MakeHeaderCell("Date"));
+                    string dateStr = o.Table.Columns.Contains("OrderDate") && o["OrderDate"] != DBNull.Value ? Convert.ToDateTime(o["OrderDate"]).ToString("dd MMM yyyy hh:mm tt") : "";
+                    info.AddCell(MakeCell(dateStr));
+
+                    info.AddCell(MakeHeaderCell("Customer"));
+                    info.AddCell(MakeCell(o["FullName"].ToString() + "\n" + o["Email"].ToString() + "\n" + o["Mobile"].ToString()));
+                    info.AddCell(MakeHeaderCell("Status"));
+                    info.AddCell(MakeCell(o["Status"].ToString()));
+
+                    info.AddCell(MakeHeaderCell("Amount (₹)"));
+                    string amt = o.Table.Columns.Contains("TotalAmount") && o["TotalAmount"] != DBNull.Value ? Convert.ToDecimal(o["TotalAmount"]).ToString("0.00") : "0.00";
+                    info.AddCell(MakeCell(amt));
+                    info.AddCell(MakeHeaderCell(""));
+                    info.AddCell(MakeCell(""));
+
+                    pdf.Add(info);
+
+                    // Items table
+                    if (items != null)
+                    {
+                        PdfPTable tbl = new PdfPTable(4) { WidthPercentage = 100, SpacingBefore = 6f };
+                        tbl.SetWidths(new float[] { 8f, 58f, 12f, 22f });
+
+                        tbl.AddCell(new PdfPCell(new Phrase("#", headerFont)) { BackgroundColor = new BaseColor(230, 230, 230), Padding = 6 });
+                        tbl.AddCell(new PdfPCell(new Phrase("Product", headerFont)) { BackgroundColor = new BaseColor(230, 230, 230), Padding = 6 });
+                        tbl.AddCell(new PdfPCell(new Phrase("Qty", headerFont)) { BackgroundColor = new BaseColor(230, 230, 230), Padding = 6, HorizontalAlignment = Element.ALIGN_CENTER });
+                        tbl.AddCell(new PdfPCell(new Phrase("Price (₹)", headerFont)) { BackgroundColor = new BaseColor(230, 230, 230), Padding = 6, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+                        int idx = 1;
+                        decimal subTotal = 0;
+                        foreach (DataRow it in items.Select("OrderID = " + o["OrderID"]))
+                        {
+                            tbl.AddCell(new PdfPCell(new Phrase(idx.ToString(), normal)) { Padding = 6 });
+                            tbl.AddCell(new PdfPCell(new Phrase(it["ProductName"].ToString(), normal)) { Padding = 6 });
+                            tbl.AddCell(new PdfPCell(new Phrase(it["Quantity"].ToString(), normal)) { Padding = 6, HorizontalAlignment = Element.ALIGN_CENTER });
+
+                            decimal price = 0;
+                            decimal.TryParse(it["Price"].ToString(), out price);
+                            tbl.AddCell(new PdfPCell(new Phrase(price.ToString("0.00"), normal)) { Padding = 6, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+                            subTotal += price * (it.Table.Columns.Contains("Quantity") && it["Quantity"] != DBNull.Value ? Convert.ToDecimal(it["Quantity"]) : 1);
+                            idx++;
+                        }
+
+                        // Add table and subtotal row
+                        pdf.Add(tbl);
+
+                        PdfPTable totals = new PdfPTable(2) { WidthPercentage = 40, HorizontalAlignment = Element.ALIGN_RIGHT, SpacingBefore = 6f };
+                        totals.SetWidths(new float[] { 50f, 50f });
+                        totals.AddCell(new PdfPCell(new Phrase("Items Total", headerFont)) { BackgroundColor = new BaseColor(245, 245, 245), Padding = 6 });
+                        totals.AddCell(new PdfPCell(new Phrase(subTotal.ToString("0.00"), normal)) { Padding = 6, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+                        // If the Orders table has TotalAmount, show it as Grand Total
+                        if (orders.Columns.Contains("TotalAmount"))
+                        {
+                            totals.AddCell(new PdfPCell(new Phrase("Grand Total", headerFont)) { BackgroundColor = new BaseColor(245, 245, 245), Padding = 6 });
+                            totals.AddCell(new PdfPCell(new Phrase(Convert.ToDecimal(o["TotalAmount"]).ToString("0.00"), normal)) { Padding = 6, HorizontalAlignment = Element.ALIGN_RIGHT });
+                        }
+
+                        pdf.Add(totals);
+                    }
+
+                    // small spacer
+                    pdf.Add(Chunk.NEWLINE);
+                }
+            }
+            catch (Exception ex)
+            {
+                // If PDF generation fails, write message and rethrow
+                pdf.Add(new Paragraph("Error generating fallback PDF: " + ex.Message, normal));
+            }
+            finally
+            {
+                pdf.Close();
+                Response.End();
+            }
+        }
+
+        // Page footer event helper
+        private class PdfFooter : PdfPageEventHelper
+        {
+            Font fnt = FontFactory.GetFont(FontFactory.HELVETICA, 8, BaseColor.GRAY);
+            public override void OnEndPage(PdfWriter writer, Document document)
+            {
+                PdfPTable tbl = new PdfPTable(2);
+                tbl.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+                tbl.SetWidths(new float[] { 70f, 30f });
+
+                PdfPCell left = new PdfPCell(new Phrase("Construction Shop Pvt. Ltd. - Confidential", fnt));
+                left.Border = Rectangle.NO_BORDER;
+                left.PaddingLeft = 10f;
+
+                PdfPCell right = new PdfPCell(new Phrase("Page " + writer.PageNumber, fnt));
+                right.Border = Rectangle.NO_BORDER;
+                right.HorizontalAlignment = Element.ALIGN_RIGHT;
+                right.PaddingRight = 10f;
+
+                tbl.AddCell(left);
+                tbl.AddCell(right);
+
+                tbl.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 5, writer.DirectContent);
+            }
+        }
+
+        private DataTable GetOrdersData(DateTime? from, DateTime? to, string status)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                string q = @"SELECT o.OrderID, o.UserID, u.FullName, u.Email, u.Mobile, o.TotalAmount, o.OrderDate, o.Status
+                             FROM Orders o
+                             JOIN Users u ON o.UserID = u.UserID
+                             WHERE 1=1";
+
+                if (from.HasValue) q += " AND o.OrderDate >= @from";
+                if (to.HasValue) q += " AND o.OrderDate <= @to";
+                if (!string.IsNullOrEmpty(status)) q += " AND o.Status = @status";
+
+                q += " ORDER BY o.OrderID DESC";
+
+                MySqlCommand cmd = new MySqlCommand(q, con);
+                if (from.HasValue) cmd.Parameters.AddWithValue("@from", from.Value.Date);
+                if (to.HasValue) cmd.Parameters.AddWithValue("@to", to.Value.Date.AddDays(1).AddSeconds(-1));
+                if (!string.IsNullOrEmpty(status)) cmd.Parameters.AddWithValue("@status", status);
+
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private DataTable GetOrderItemsData(DateTime? from, DateTime? to, string status)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                string q = @"SELECT oi.OrderID, p.ProductName, oi.Quantity, oi.Price
+                             FROM OrderItems oi
+                             JOIN Products p ON oi.ProductID = p.ProductID
+                             JOIN Orders o ON oi.OrderID = o.OrderID
+                             WHERE 1=1";
+
+                if (from.HasValue) q += " AND o.OrderDate >= @from";
+                if (to.HasValue) q += " AND o.OrderDate <= @to";
+                if (!string.IsNullOrEmpty(status)) q += " AND o.Status = @status";
+
+                q += " ORDER BY oi.OrderID, p.ProductName";
+
+                MySqlCommand cmd = new MySqlCommand(q, con);
+                if (from.HasValue) cmd.Parameters.AddWithValue("@from", from.Value.Date);
+                if (to.HasValue) cmd.Parameters.AddWithValue("@to", to.Value.Date.AddDays(1).AddSeconds(-1));
+                if (!string.IsNullOrEmpty(status)) cmd.Parameters.AddWithValue("@status", status);
+
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private void CreateOrdersXsd(string xsdPath, DataSet ds)
+        {
+            try
+            {
+                // Write schema with both tables Orders and OrderItems
+                ds.WriteXmlSchema(xsdPath);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        private DataTable GetData(string query)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+    }
+}

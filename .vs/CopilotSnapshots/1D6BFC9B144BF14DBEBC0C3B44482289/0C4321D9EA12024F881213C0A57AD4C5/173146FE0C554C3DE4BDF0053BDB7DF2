@@ -1,0 +1,145 @@
+﻿using System;
+using System.Data;
+using MySql.Data.MySqlClient;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Invoice : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                int orderId = 0;
+                if (!int.TryParse(Request.QueryString["orderId"], out orderId) || orderId == 0)
+                {
+                    Response.Write("Invalid order id");
+                    return;
+                }
+
+                DataTable order = GetData($@"SELECT o.OrderID,o.TotalAmount,o.OrderDate,o.Status,u.FullName,u.Email,u.Mobile,u.Address
+                                            FROM Orders o
+                                            JOIN Users u ON o.UserID = u.UserID
+                                            WHERE o.OrderID = {orderId}");
+
+                DataTable items = GetData($@"SELECT oi.ProductID,p.ProductName,oi.Quantity,oi.Price
+                                            FROM OrderItems oi
+                                            JOIN Products p ON oi.ProductID = p.ProductID
+                                            WHERE oi.OrderID = {orderId}");
+
+                if (order.Rows.Count == 0)
+                {
+                    Response.Write("Order not found");
+                    return;
+                }
+
+                GenerateInvoicePDF(order.Rows[0], items);
+            }
+        }
+
+        private DataTable GetData(string query)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private void GenerateInvoicePDF(DataRow order, DataTable items)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=Invoice_" + order["OrderID"] + ".pdf");
+
+            Document pdf = new Document(PageSize.A4, 36, 36, 54, 54);
+            PdfWriter.GetInstance(pdf, Response.OutputStream);
+            pdf.Open();
+
+            // Title
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+            pdf.Add(new Paragraph("Invoice") { Alignment = Element.ALIGN_CENTER });
+            pdf.Add(new Paragraph("\n"));
+
+            // Order Info
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+            PdfPTable info = new PdfPTable(2);
+            info.WidthPercentage = 100;
+            info.SetWidths(new float[] { 70f, 30f });
+
+            PdfPTable left = new PdfPTable(1);
+            left.AddCell(new Phrase("Customer:", normal));
+            left.AddCell(new Phrase(order["FullName"].ToString(), normal));
+            left.AddCell(new Phrase(order["Email"].ToString(), normal));
+            left.AddCell(new Phrase(order["Mobile"].ToString(), normal));
+            left.AddCell(new Phrase(order["Address"].ToString(), normal));
+
+            PdfPTable right = new PdfPTable(1);
+            right.AddCell(new Phrase("Order #: " + order["OrderID"].ToString(), normal));
+            right.AddCell(new Phrase("Date: " + Convert.ToDateTime(order["OrderDate"]).ToString("yyyy-MM-dd"), normal));
+            right.AddCell(new Phrase("Status: " + order["Status"].ToString(), normal));
+
+            info.AddCell(new PdfPCell(left) { Border = Rectangle.NO_BORDER });
+            info.AddCell(new PdfPCell(right) { Border = Rectangle.NO_BORDER });
+
+            pdf.Add(info);
+            pdf.Add(new Paragraph("\n"));
+
+            // Items Table
+            PdfPTable table = new PdfPTable(4);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 10f, 50f, 15f, 25f });
+
+            table.AddCell(new PdfPCell(new Phrase("#", normal)));
+            table.AddCell(new PdfPCell(new Phrase("Product", normal)));
+            table.AddCell(new PdfPCell(new Phrase("Qty", normal)));
+            table.AddCell(new PdfPCell(new Phrase("Amount", normal)));
+
+            int i = 1;
+            decimal total = 0;
+            foreach (DataRow r in items.Rows)
+            {
+                int qty = Convert.ToInt32(r["Quantity"]);
+                decimal price = Convert.ToDecimal(r["Price"]);
+                decimal amount = qty * price;
+                total += amount;
+
+                table.AddCell(new PdfPCell(new Phrase(i.ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(r["ProductName"].ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(qty.ToString(), normal)));
+                table.AddCell(new PdfPCell(new Phrase(amount.ToString("0.00"), normal)));
+                i++;
+            }
+
+            pdf.Add(table);
+            pdf.Add(new Paragraph("\n"));
+
+            // Totals
+            PdfPTable totals = new PdfPTable(2);
+            totals.WidthPercentage = 40;
+            totals.HorizontalAlignment = Element.ALIGN_RIGHT;
+            totals.SetWidths(new float[] { 50f, 50f });
+
+            totals.AddCell(new PdfPCell(new Phrase("Subtotal", normal)) { Border = Rectangle.NO_BORDER });
+            totals.AddCell(new PdfPCell(new Phrase(total.ToString("0.00"), normal)) { Border = Rectangle.NO_BORDER });
+
+            decimal delivery = Convert.ToDecimal(order["TotalAmount"]) - total;
+            totals.AddCell(new PdfPCell(new Phrase("Delivery", normal)) { Border = Rectangle.NO_BORDER });
+            totals.AddCell(new PdfPCell(new Phrase(delivery.ToString("0.00"), normal)) { Border = Rectangle.NO_BORDER });
+
+            totals.AddCell(new PdfPCell(new Phrase("Total", normal)) { Border = Rectangle.NO_BORDER });
+            totals.AddCell(new PdfPCell(new Phrase(order["TotalAmount"].ToString(), normal)) { Border = Rectangle.NO_BORDER });
+
+            pdf.Add(totals);
+
+            pdf.Close();
+            Response.End();
+        }
+    }
+}

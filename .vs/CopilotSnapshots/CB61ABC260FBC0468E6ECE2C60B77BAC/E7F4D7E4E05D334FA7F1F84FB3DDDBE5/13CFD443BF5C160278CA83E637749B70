@@ -1,0 +1,106 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Register : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                UpdateLoginProfileVisibility();
+            }
+        }
+
+        private void UpdateLoginProfileVisibility()
+        {
+            var login = Master.FindControl("loginLink");
+            var profile = Master.FindControl("profileLink");
+
+            if (login == null || profile == null)
+                return;
+
+            var loginLink = (System.Web.UI.HtmlControls.HtmlAnchor)login;
+            var profileLink = (System.Web.UI.HtmlControls.HtmlAnchor)profile;
+
+            loginLink.Visible = Session["userId"] == null;
+            profileLink.Visible = Session["userId"] != null;
+        }
+
+        protected void btnRegister_Click(object sender, EventArgs e)
+        {
+            // STOP if validators failed
+            if (!Page.IsValid)
+                return;
+
+            string name = txtName.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string mobile = txtMobile.Text.Trim();
+            string password = txtPassword.Text.Trim();
+            string address = txtAddress.Text.Trim();
+
+            // VALIDATE ADDRESS (cannot be only numbers)
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtAddress.Text.Trim(), @"^\d+$"))
+            {
+                Response.Write("<script>alert('Address cannot be only numbers. Please enter a valid address.');</script>");
+                return;
+            }
+
+
+            string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred;";
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    // ✅ CHECK IF EMAIL ALREADY EXISTS (No SQL error)
+                    string checkEmail = "SELECT COUNT(*) FROM Users WHERE Email=@e";
+                    MySqlCommand checkCmd = new MySqlCommand(checkEmail, con);
+                    checkCmd.Parameters.AddWithValue("@e", email);
+
+                    int exists = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                    if (exists > 0)
+                    {
+                        // CUSTOM MESSAGE INSTEAD OF SQL ERROR
+                        Response.Write("<script>alert('This email is already registered. Please try another email.');</script>");
+                        return;
+                    }
+
+                    // INSERT NEW USER
+                    string query = @"INSERT INTO Users 
+                    (FullName, Email, Mobile, Password, Address)
+                    VALUES (@name, @email, @mobile, @password, @address)";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@email", email);
+                    cmd.Parameters.AddWithValue("@mobile", mobile);
+                    cmd.Parameters.AddWithValue("@password", password);
+                    cmd.Parameters.AddWithValue("@address", address);
+
+                    int rows = cmd.ExecuteNonQuery();
+
+                    if (rows > 0)
+                    {
+                        Response.Write("<script>alert('Registration Successful!'); window.location='Login.aspx';</script>");
+                    }
+                    else
+                    {
+                        Response.Write("<script>alert('Registration Failed');</script>");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // fallback error
+                Response.Write("<script>alert('ERROR: " + ex.Message.Replace("'", "") + "');</script>");
+            }
+        }
+
+    }
+}
+

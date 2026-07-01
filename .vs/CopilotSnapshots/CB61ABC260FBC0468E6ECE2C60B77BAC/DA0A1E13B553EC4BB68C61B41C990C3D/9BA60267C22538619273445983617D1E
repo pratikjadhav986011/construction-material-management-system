@@ -1,0 +1,59 @@
+﻿using System;
+using MySql.Data.MySqlClient;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Login : System.Web.UI.Page
+    {
+        MySqlConnection con = new MySqlConnection("server=localhost; user=root; password=12345; database=constructiondb");
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // If user is already logged in → go home
+                if (Session["userId"] != null)
+                    Response.Redirect("Home.aspx");
+            }
+        }
+
+        protected void btnLogin_Click(object sender, EventArgs e)
+        {
+            string email = txtEmail.Text.Trim();
+            string pass = txtPassword.Text.Trim();
+
+            try
+            {
+                con.Open();
+                string query = "SELECT UserId FROM users WHERE Email=@email AND Password=@password";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@password", pass);
+
+                object result = cmd.ExecuteScalar();
+
+                if (result != null)
+                {
+                    // Save session
+                    Session["userId"] = Convert.ToInt32(result);
+
+                    // Refresh master page header visibility
+                    Response.Redirect("Home.aspx");
+                }
+                else
+                {
+                    Response.Write("<script>alert('Invalid Email or Password');</script>");
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+    }
+}

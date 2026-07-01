@@ -1,0 +1,400 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class SupplierManagement : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadCategories();
+                LoadSuppliers();
+            }
+        }
+
+        private void LoadCategories()
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Categories", con);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                ddlCategory.DataSource = dt;
+                ddlCategory.DataTextField = "CategoryName";
+                ddlCategory.DataValueField = "CategoryID";
+                ddlCategory.DataBind();
+
+                ddlEditCategory.DataSource = dt;
+                ddlEditCategory.DataTextField = "CategoryName";
+                ddlEditCategory.DataValueField = "CategoryID";
+                ddlEditCategory.DataBind();
+            }
+        }
+
+        private void LoadSuppliers()
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                string query = @"
+SELECT s.SupplierID, s.SupplierName, s.Address, s.City,
+       s.Contact, c.CategoryName, s.CategoryID
+FROM Suppliers s
+LEFT JOIN Categories c ON s.CategoryID = c.CategoryID";
+
+
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                gvSuppliers.DataSource = dt;
+                gvSuppliers.DataBind();
+            }
+        }
+
+        // ADD SUPPLIER
+        protected void btnAddSupplier_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtSupplierName.Text))
+            {
+                lblMsg.Text = "Supplier name is required!";
+                lblMsg.CssClass = "text-danger";
+                return;
+            }
+
+            if (txtContact.Text.Length != 10)
+            {
+                lblMsg.Text = "Enter a valid 10-digit mobile number!";
+                lblMsg.CssClass = "text-danger";
+                return;
+            }
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                MySqlCommand cmd = new MySqlCommand(@"
+INSERT INTO Suppliers 
+(SupplierName, CategoryID, Address, City, Contact)
+VALUES (@name, @cat, @address, @city, @contact)", con);
+
+                cmd.Parameters.AddWithValue("@name", txtSupplierName.Text.Trim());
+                cmd.Parameters.AddWithValue("@cat", ddlCategory.SelectedValue);
+                cmd.Parameters.AddWithValue("@address", txtAddress.Text.Trim());
+                cmd.Parameters.AddWithValue("@city", txtCity.Text.Trim());
+                cmd.Parameters.AddWithValue("@contact", txtContact.Text.Trim());
+
+
+                cmd.ExecuteNonQuery();
+            }
+
+            lblMsg.Text = "Supplier added successfully!";
+            lblMsg.CssClass = "text-success";
+
+            txtSupplierName.Text = "";
+            txtAddress.Text = "";
+            txtCity.Text = "";
+            txtContact.Text = "";
+
+
+            LoadSuppliers();
+        }
+
+        // EDIT / DELETE HANDLER
+        protected void gvSuppliers_RowCommand(object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
+
+            if (e.CommandName == "editSupplier")
+            {
+                LoadSupplierForEdit(id);
+
+                ScriptManager.RegisterStartupScript(
+                    this, this.GetType(), "showModal",
+                    "var m=new bootstrap.Modal(document.getElementById('editModal')); m.show();", true);
+            }
+            else if (e.CommandName == "deleteSupplier")
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    // Check if supplier has purchase orders
+                    MySqlCommand check = new MySqlCommand("SELECT COUNT(*) FROM PurchaseOrders WHERE SupplierID=@id", con);
+                    check.Parameters.AddWithValue("@id", id);
+                    int usedCount = Convert.ToInt32(check.ExecuteScalar());
+
+                    if (usedCount > 0)
+                    {
+                        lblMsg.Text = "This supplier cannot be deleted because it is used in purchase orders.";
+                        lblMsg.CssClass = "text-danger";
+                        return;
+                    }
+
+                    // Safe delete
+                    MySqlCommand cmd = new MySqlCommand("DELETE FROM Suppliers WHERE SupplierID=@id", con);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.ExecuteNonQuery();
+                }
+
+                LoadSuppliers();
+            }
+        }
+
+        private void LoadSupplierForEdit(int id)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                MySqlCommand cmd = new MySqlCommand("SELECT * FROM Suppliers WHERE SupplierID=@id", con);
+                cmd.Parameters.AddWithValue("@id", id);
+
+                var dr = cmd.ExecuteReader();
+                if (dr.Read())
+                {
+                    hfSupplierID.Value = dr["SupplierID"].ToString();
+                    txtEditName.Text = dr["SupplierName"].ToString();
+                    txtEditAddress.Text = dr["Address"].ToString();
+                    txtEditCity.Text = dr["City"].ToString();
+
+                    txtEditContact.Text = dr["Contact"].ToString();
+
+                    // --- FIX / VALIDATE CATEGORY ID ---
+                    string catID = dr["CategoryID"] == DBNull.Value ? "" : dr["CategoryID"].ToString();
+
+                    if (!string.IsNullOrEmpty(catID) && ddlEditCategory.Items.FindByValue(catID) != null)
+                    {
+                        ddlEditCategory.SelectedValue = catID;
+                    }
+                    else
+                    {
+                        ddlEditCategory.SelectedIndex = 0; // default selection
+                    }
+                }
+            }
+        }
+
+
+        // UPDATE SUPPLIER
+        protected void btnUpdate_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtEditName.Text))
+            {
+                lblMsg.Text = "Supplier name is required!";
+                lblMsg.CssClass = "text-danger";
+
+                // keep modal open
+                ScriptManager.RegisterStartupScript(this, this.GetType(),
+                    "showModal", "var m=new bootstrap.Modal(document.getElementById('editModal')); m.show();", true);
+                return;
+            }
+
+            if (txtEditContact.Text.Length != 10)
+            {
+                lblMsg.Text = "Enter a valid 10-digit mobile number!";
+                lblMsg.CssClass = "text-danger";
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(),
+                    "showModal", "var m=new bootstrap.Modal(document.getElementById('editModal')); m.show();", true);
+                return;
+            }
+
+            int supplierID = Convert.ToInt32(hfSupplierID.Value);
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                MySqlCommand cmd = new MySqlCommand(@"
+UPDATE Suppliers SET 
+    SupplierName = @name,
+    CategoryID = @category,
+    Address = @address,
+    City = @city,
+    Contact = @contact
+WHERE SupplierID = @id", con);
+
+                cmd.Parameters.AddWithValue("@name", txtEditName.Text.Trim());
+                cmd.Parameters.AddWithValue("@category", ddlEditCategory.SelectedValue);
+                cmd.Parameters.AddWithValue("@address", txtEditAddress.Text.Trim());
+                cmd.Parameters.AddWithValue("@city", txtEditCity.Text.Trim());
+                cmd.Parameters.AddWithValue("@contact", txtEditContact.Text.Trim());
+                cmd.Parameters.AddWithValue("@id", supplierID);
+
+
+                cmd.ExecuteNonQuery();
+            }
+
+            lblMsg.Text = "Supplier updated successfully!";
+            lblMsg.CssClass = "text-success";
+
+            LoadSuppliers();
+        }
+
+        // DOWNLOAD SUPPLIER LEDGER
+        protected void btnDownloadSupplierLedger_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DataTable dt = GetSuppliersData();
+                GenerateSupplierLedgerPDF(dt);
+            }
+            catch (Exception ex)
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Error generating supplier ledger: " + ex.Message + "</div>";
+            }
+        }
+
+        private DataTable GetSuppliersData()
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                string q = @"SELECT s.SupplierID, s.SupplierName, s.Address, s.City, s.Contact, c.CategoryName
+                            FROM Suppliers s
+                            LEFT JOIN Categories c ON s.CategoryID=c.CategoryID
+                            ORDER BY s.SupplierID DESC";
+                MySqlDataAdapter da = new MySqlDataAdapter(q, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private void GenerateSupplierLedgerPDF(DataTable dt)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=Supplier_Ledger.pdf");
+
+            // Use landscape A4
+            Document pdf = new Document(PageSize.A4.Rotate(), 30, 30, 30, 30);
+            PdfWriter writer = PdfWriter.GetInstance(pdf, Response.OutputStream);
+
+            // Attach footer event (matching ManageUsers implementation)
+            writer.PageEvent = new SupplierLedgerFooter();
+
+            pdf.Open();
+
+            // Larger, more readable fonts (matching ManageUsers)
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 11);
+
+            // Header
+            PdfPTable head = new PdfPTable(3) { WidthPercentage = 100 };
+            head.SetWidths(new float[] { 20f, 50f, 30f });
+
+            PdfPCell logoCell = new PdfPCell() { Border = Rectangle.NO_BORDER, Padding = 8 };
+            try
+            {
+                string logoPath = Server.MapPath("~/images/logo.png");
+                if (File.Exists(logoPath))
+                {
+                    iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
+                    logo.ScaleToFit(160f, 90f);
+                    logo.Alignment = Element.ALIGN_LEFT;
+                    logoCell.AddElement(logo);
+                }
+            }
+            catch { }
+
+            PdfPTable comp = new PdfPTable(1);
+            comp.AddCell(new PdfPCell(new Phrase("Construction Shop", titleFont)) { Border = Rectangle.NO_BORDER, PaddingBottom = 8 });
+            comp.AddCell(new PdfPCell(new Phrase("Supplier Ledger", headerFont)) { Border = Rectangle.NO_BORDER, PaddingBottom = 6 });
+            comp.AddCell(new PdfPCell(new Phrase("Generated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"), normal)) { Border = Rectangle.NO_BORDER });
+
+            head.AddCell(logoCell);
+            head.AddCell(new PdfPCell(comp) { Border = Rectangle.NO_BORDER, VerticalAlignment = Element.ALIGN_MIDDLE });
+            head.AddCell(new PdfPCell(new Phrase("", normal)) { Border = Rectangle.NO_BORDER });
+
+            pdf.Add(head);
+            pdf.Add(Chunk.NEWLINE);
+
+            // Table with slightly larger cells and padding (matching ManageUsers)
+            PdfPTable table = new PdfPTable(6) { WidthPercentage = 100, SpacingBefore = 8f };
+            table.SetWidths(new float[] { 8f, 30f, 28f, 16f, 20f, 40f });
+
+            BaseColor hdrBg = new BaseColor(230, 230, 250);
+
+            PdfPCell MakeHeaderCell(string text)
+            {
+                var c = new PdfPCell(new Phrase(text, headerFont)) { BackgroundColor = hdrBg, HorizontalAlignment = Element.ALIGN_CENTER };
+                c.Padding = 10f;
+                c.MinimumHeight = 34f;
+                return c;
+            }
+
+            table.AddCell(MakeHeaderCell("ID"));
+            table.AddCell(MakeHeaderCell("Supplier Name"));
+            table.AddCell(MakeHeaderCell("Category"));
+            table.AddCell(MakeHeaderCell("Mobile"));
+            table.AddCell(MakeHeaderCell("City"));
+            table.AddCell(MakeHeaderCell("Address"));
+
+            bool alt = false;
+            foreach (DataRow r in dt.Rows)
+            {
+                BaseColor rowBg = alt ? new BaseColor(250, 250, 255) : BaseColor.WHITE;
+
+                PdfPCell MakeCell(string text, int align = Element.ALIGN_LEFT)
+                {
+                    var c = new PdfPCell(new Phrase(text, normal)) { BackgroundColor = rowBg, HorizontalAlignment = align };
+                    c.Padding = 8f;
+                    c.MinimumHeight = 28f;
+                    return c;
+                }
+
+                table.AddCell(MakeCell(r["SupplierID"].ToString(), Element.ALIGN_CENTER));
+                table.AddCell(MakeCell(r["SupplierName"].ToString()));
+                table.AddCell(MakeCell(r["CategoryName"].ToString()));
+                table.AddCell(MakeCell(r["Contact"].ToString(), Element.ALIGN_CENTER));
+                table.AddCell(MakeCell(r["City"].ToString()));
+                table.AddCell(MakeCell(r["Address"].ToString()));
+
+                alt = !alt;
+            }
+
+            pdf.Add(table);
+            pdf.Add(Chunk.NEWLINE);
+
+            Paragraph note = new Paragraph("This is a system generated supplier ledger.", normal) { SpacingBefore = 8f };
+            note.Alignment = Element.ALIGN_LEFT;
+            pdf.Add(note);
+
+            pdf.Close();
+            Response.End();
+        }
+
+        // Footer for supplier ledger (matching ManageUsers)
+        private class SupplierLedgerFooter : PdfPageEventHelper
+        {
+            Font fnt = FontFactory.GetFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
+            public override void OnEndPage(PdfWriter writer, Document document)
+            {
+                PdfPTable tbl = new PdfPTable(1);
+                tbl.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+                PdfPCell cell = new PdfPCell(new Phrase("Page " + writer.PageNumber, fnt));
+                cell.Border = Rectangle.NO_BORDER;
+                cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                cell.PaddingTop = 8f;
+                tbl.AddCell(cell);
+                tbl.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 5, writer.DirectContent);
+            }
+        }
+    }
+}

@@ -1,0 +1,267 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
+using System.Web.UI.WebControls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.IO;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ManageUsers : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+                LoadUsers();
+        }
+
+        private void LoadUsers(string search = "")
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string query = @"
+                SELECT UserID, FullName, Email, Mobile, Address
+                FROM Users
+                WHERE FullName LIKE @search 
+                   OR Email LIKE @search 
+                   OR Mobile LIKE @search
+                ORDER BY UserID DESC";
+
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dt.Columns.Add("RowNum", typeof(int));
+                for (int i = 0; i < dt.Rows.Count; i++)
+                    dt.Rows[i]["RowNum"] = i + 1;
+
+                GridViewUsers.DataSource = dt;
+                GridViewUsers.DataBind();
+            }
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // DOWNLOAD REPORT
+        protected void btnDownloadReport_Click(object sender, EventArgs e)
+        {
+            DataTable dt = GetData("SELECT UserID, FullName, Email, Mobile, Address FROM Users ORDER BY UserID DESC");
+            GeneratePDF("Users_Report", dt);
+        }
+
+        // DOWNLOAD CRYSTAL LEDGER (DataTable pushed into .rpt)
+        protected void btnDownloadCrystal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string rptPath = Server.MapPath("~/Reports/UserLedger.rpt");
+
+                // Prepare the data to push into the report
+                DataTable dt = GetData("SELECT UserID, FullName, Email, Mobile, Address FROM Users ORDER BY UserID DESC");
+
+                if (!File.Exists(rptPath))
+                {
+                    // if .rpt missing, ensure an XSD schema exists to help design the report in Crystal Designer
+                    string xsdPath = Server.MapPath("~/Reports/UserLedger.xsd");
+                    if (!File.Exists(xsdPath))
+                    {
+                        CreateUserLedgerXsd(xsdPath, dt);
+                    }
+
+                    lblMsg.Text = "<div class='msg msg-error'>Crystal report file not found. A dataset schema was created at Reports/UserLedger.xsd. Use it in Crystal Reports designer to create UserLedger.rpt, then place it in the Reports folder.</div>";
+                    return;
+                }
+
+                ReportDocument rd = new ReportDocument();
+                rd.Load(rptPath);
+
+                // Push DataTable as the report datasource instead of setting DB logon
+                rd.SetDataSource(dt);
+
+                // Export to PDF stream
+                using (var stream = rd.ExportToStream(ExportFormatType.PortableDocFormat))
+                {
+                    Response.Clear();
+                    Response.Buffer = true;
+                    Response.ContentType = "application/pdf";
+                    Response.AddHeader("Content-Disposition", "attachment; filename=User_Ledger.pdf;");
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.CopyTo(Response.OutputStream);
+                    Response.Flush();
+                    Response.End();
+                }
+
+                rd.Close();
+                rd.Dispose();
+            }
+            catch (Exception ex)
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Error generating crystal report: " + ex.Message + "</div>";
+            }
+        }
+
+        private void CreateUserLedgerXsd(string xsdPath, DataTable dt)
+        {
+            try
+            {
+                // Create a simple DataSet with the table schema and write as XSD for Crystal Designer
+                DataSet ds = new DataSet("UserLedgerDS");
+                DataTable schemaTable = dt.Clone();
+                ds.Tables.Add(schemaTable);
+                ds.WriteXmlSchema(xsdPath);
+            }
+            catch
+            {
+                // ignore schema creation errors
+            }
+        }
+
+        private DataTable GetData(string query)
+        {
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                MySqlDataAdapter da = new MySqlDataAdapter(query, con);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        private void GeneratePDF(string title, DataTable dt)
+        {
+            Response.ContentType = "application/pdf";
+            Response.AddHeader("content-disposition", "attachment;filename=" + title + ".pdf");
+
+            Document pdf = new Document(PageSize.A4, 20, 20, 20, 20);
+            PdfWriter.GetInstance(pdf, Response.OutputStream);
+
+            pdf.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normal = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+            pdf.Add(new Paragraph("Users Report") { Alignment = Element.ALIGN_CENTER, SpacingAfter = 8f });
+            pdf.Add(new Paragraph("Generated on: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm")) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 12f });
+
+            PdfPTable table = new PdfPTable(dt.Columns.Count);
+            table.WidthPercentage = 100;
+
+            foreach (DataColumn col in dt.Columns)
+                table.AddCell(new PdfPCell(new Phrase(col.ColumnName, headerFont)) { BackgroundColor = new BaseColor(240, 240, 240) });
+
+            foreach (DataRow row in dt.Rows)
+                foreach (var cell in row.ItemArray)
+                    table.AddCell(new Phrase(cell.ToString(), normal));
+
+            pdf.Add(table);
+            pdf.Close();
+
+            Response.End();
+        }
+
+        // EDIT MODE
+        protected void GridViewUsers_RowEditing(object sender, System.Web.UI.WebControls.GridViewEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = e.NewEditIndex;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // CANCEL EDIT
+        protected void GridViewUsers_RowCancelingEdit(object sender, System.Web.UI.WebControls.GridViewCancelEditEventArgs e)
+        {
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+        // UPDATE USER
+        protected void GridViewUsers_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+            GridViewRow row = GridViewUsers.Rows[e.RowIndex];
+
+            string fullName = ((TextBox)row.Cells[1].Controls[0]).Text;
+            string email = ((TextBox)row.Cells[2].Controls[0]).Text;
+            string mobile = ((TextBox)row.Cells[3].Controls[0]).Text;
+            string address = ((TextBox)row.Cells[4].Controls[0]).Text;
+
+            // ==== MOBILE VALIDATION ====
+            if (!System.Text.RegularExpressions.Regex.IsMatch(mobile, @"^[0-9]{10}$"))
+            {
+                lblMsg.Text = "<div class='msg msg-error'>Mobile number must be 10 digits only.</div>";
+                return;
+            }
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+
+                // duplicate email check
+                string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email=@Email AND UserID<>@UserID";
+                MySqlCommand checkCmd = new MySqlCommand(checkQuery, con);
+                checkCmd.Parameters.AddWithValue("@Email", email);
+                checkCmd.Parameters.AddWithValue("@UserID", userId);
+
+                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+                {
+                    lblMsg.Text = "<div class='msg msg-error'>Email already registered!</div>";
+                    return;
+                }
+
+                // Update query
+                string update = @"
+        UPDATE Users 
+        SET FullName=@FullName, Email=@Email, Mobile=@Mobile, Address=@Address
+        WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(update, con);
+                cmd.Parameters.AddWithValue("@FullName", fullName);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@Mobile", mobile);
+                cmd.Parameters.AddWithValue("@Address", address);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                cmd.ExecuteNonQuery();
+                lblMsg.Text = "<div class='msg msg-success'>User updated successfully!</div>";
+            }
+
+            GridViewUsers.EditIndex = -1;
+            LoadUsers(txtSearch.Text.Trim());
+        }
+
+
+        // DELETE USER
+        protected void GridViewUsers_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
+        {
+            int userId = Convert.ToInt32(GridViewUsers.DataKeys[e.RowIndex].Value);
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                string delete = "DELETE FROM Users WHERE UserID=@UserID";
+
+                MySqlCommand cmd = new MySqlCommand(delete, con);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            lblMsg.Text = "<div class='msg msg-success'>User deleted successfully!</div>";
+            LoadUsers(txtSearch.Text.Trim());
+        }
+    }
+}

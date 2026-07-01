@@ -1,0 +1,603 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="ConstructionMaterialsManagement.Site" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>
+        <asp:ContentPlaceHolder ID="PageTitle" runat="server" />
+    </title>
+
+    <!-- BOOTSTRAP + FONTAWESOME -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <!-- PAGE-SPECIFIC HEAD CONTENT -->
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- YOUR GLOBAL CSS (same as in Home.aspx) -->
+    <style>
+        /* ====================================================================
+           1. CSS VARIABLES & BASE STYLES
+           ==================================================================== */
+        :root {
+            --primary-blue: #008cd7; 
+            --banner-dark: #343a3c; 
+            --banner-info-bg: #e9f6f3; 
+            --banner-delivery-text: #04634f;
+            --section-yellow: #ffc107; 
+            --text-dark: #343a40;
+            --font-family: 'Inter', sans-serif;
+            --product-card-bg: white;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: #f4f4f4;
+        }
+       
+                /* keep your full CSS here exactly as you pasted */
+                 /* Reset ul/nav structure for correct semantics and styling */
+        .secondary-links .nav .nav-item {
+            padding: 0 0.5rem;
+        }
+        .secondary-links .nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* ====================================================================
+           2. HEADER & NAVIGATION STYLING
+           ==================================================================== */
+        .top-header {
+            background-color: var(--section-yellow); 
+            color: var(--text-dark);
+            padding: 5px 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+            .main-nav {
+        background-color: #ffffff !important;
+        }
+
+
+        .main-nav .logo-text {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .site-logo {
+            height: 85px;
+            margin-top: -5px;
+        }
+
+
+
+        .main-nav .search-bar .input-group {
+            height: 50px;
+            margin: 0 auto; 
+        }
+        .main-nav .search-bar-wrapper {
+            max-width: 600px;
+            width: 100%;
+        }
+        /* OVERLAY */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            opacity: 0;
+            visibility: hidden;
+            transition: .4s ease;
+            z-index: 9998;
+        }
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* SIDEBAR */
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            transition: left .45s ease;
+            box-shadow: 6px 0 25px rgba(0,0,0,.25);
+            z-index: 9999;
+        }
+        .sidebar-menu.active {
+            left: 0;
+        }
+
+        /* HEADER */
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        /* PROFILE */
+        .sidebar-profile a {
+            display: block;
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f1f1;
+            text-decoration: none;
+            color: #333;
+        }
+        .sidebar-profile i {
+            margin-right: 10px;
+        }
+
+        /* LINKS */
+        .sidebar-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-links li {
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .sidebar-links a {
+            display: block;
+            padding: 14px 18px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .sidebar-links a i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        .sidebar-links a:hover {
+            background: #f8f9fa;
+        }
+
+        /* SUB MENU */
+        .has-sub .sub-toggle {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 18px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .sub-menu {
+            display: none;
+            background: #fafafa;
+        }
+        .sub-menu a {
+            padding-left: 45px;
+            font-size: 0.95rem;
+        }
+        .has-sub.active .sub-menu {
+            display: block;
+        }
+        .has-sub.active .fa-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        /* MENU ICON */
+        .menu-icon {
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+
+        .nav-icons-container {
+            font-size: 1.1rem;
+            justify-content: flex-end; 
+        }
+        .nav-icons-container .login-text {
+            font-weight: 600;
+            margin-left: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .main-nav .secondary-links .nav-link {
+            padding: 0.5rem 1rem; 
+            font-size: 1rem;
+        }
+       
+         /* ================= COMPACT FOOTER ================= */
+
+        .footer-links {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 10px 0;   /* Reduced from 40px */
+        }
+
+        .footer-links h5 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .footer-links p,
+        .footer-links a {
+            font-size: 14px;
+            margin-bottom: 3px;
+            line-height: 1.5;
+        }
+
+        .footer-links a {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #ffc107;
+        }
+
+        /* Delivery Icons Section (reduce height) */
+        .footer-links .border-top {
+            margin-top: 10px !important;
+            padding-top: 8px !important;
+        }
+
+        /* Bottom copyright bar */
+        .footer-bottom {
+            background-color: #212529;
+            color: #adb5bd;
+            padding: 4px 0;     /* Reduced height */
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+<body class="bg-light">
+    <form id="form1" runat="server">
+
+<!-- ===== SIDEBAR OVERLAY ===== -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebarMenu" class="sidebar-menu">
+
+    <!-- HEADER -->
+    <div class="sidebar-header d-flex align-items-center justify-content-between">
+        <span id="closeSidebar" class="sidebar-back">
+            <i class="fas fa-arrow-left me-2"></i> BACK
+        </span>
+    </div>
+
+    <!-- PROFILE / LOGIN -->
+    <div class="sidebar-profile">
+        <asp:Panel ID="pnlSidebarLogin" runat="server">
+            <a href="Login.aspx">
+                <i class="fas fa-user-circle"></i> Login / Register
+            </a>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlSidebarProfile" runat="server" Visible="false">
+            <a href="Profile.aspx">
+                <i class="fas fa-user"></i> My Profile
+            </a>
+            <a href="Orders.aspx">
+                <i class="fas fa-box"></i> My Orders
+            </a>
+            <a href="Logout.aspx" class="text-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </asp:Panel>
+    </div>
+
+    <!-- MENU LINKS -->
+    <ul class="sidebar-links">
+
+        <li><a href="Home.aspx"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="OrderHistory.aspx"><i class="fas fa-home"></i> Order History</a></li>
+        <li><a href="Products.aspx"><i class="fas fa-store"></i> Shop</a></li>
+
+        <!-- POLICIES -->
+        <li class="has-sub">
+            <div class="sub-toggle">
+                <span><i class="fas fa-file-alt"></i> Demo Policies</span>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="Terms.aspx">Terms & Conditions</a></li>
+            </ul>
+        </li>
+
+        <!-- CATEGORIES -->
+        <li class="has-sub">
+            <div class="sub-toggle">
+                <span><i class="fas fa-layer-group"></i> Shop By Category</span>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="Products.aspx?category=Steel">Steel</a></li>
+                <li><a href="Products.aspx?category=Cement">Cement</a></li>
+                <li><a href="Products.aspx?category=Bricks">Bricks</a></li>
+                <li><a href="Products.aspx?category=Paints">Paints</a></li>
+            </ul>
+        </li>
+
+        <li><a href="About.aspx"><i class="fas fa-info-circle"></i> About</a></li>
+        <li><a href="Contact.aspx"><i class="fas fa-phone"></i> Contact</a></li>
+        <li><a href="Feedback.aspx"><i class="fas fa-comment"></i> Feedback</a></li>
+
+    </ul>
+</div>
+
+
+
+        <!-- ================== HEADER ================== -->
+        <header class="top-header text-center py-1">
+            <div class="container-fluid">
+                <small>Call us: +91-9175984788 | Email: info@example.com | Track Order</small>
+            </div>
+        </header>
+
+        <!-- ================= NAVBAR ================= -->
+
+        <nav class="main-nav shadow-sm sticky-top">
+            <div class="container-fluid">
+
+                <div class="d-flex align-items-center py-3 px-3 px-md-4">
+                    <!-- Logo -->
+                    <div class="col-auto d-flex align-items-center">
+                        <div class="d-flex align-items-center">
+
+                    <!-- MENU ICON -->
+                    <span class="menu-icon me-2" id="openSidebar">
+                        <i class="fas fa-bars"></i>
+                    </span>
+
+                    <!-- LOGO -->
+                   <a href="Home.aspx" class="logo-wrapper me-3 me-lg-4">
+                    <img src="Images/logo.png" alt="Build Flow Logo" class="site-logo" />
+                </a>
+
+            </div>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="search-bar flex-grow-1 d-none d-md-block px-lg-3">
+                        <div class="search-bar-wrapper mx-auto">
+                            <div class="input-group">
+
+                                <asp:TextBox ID="txtSearch" runat="server"
+                                    CssClass="form-control"
+                                    Placeholder="Search a Product"></asp:TextBox>
+
+                                <asp:LinkButton ID="btnSearch" runat="server"
+                                    CssClass="btn btn-warning"
+                                    OnClick="BtnSearch_Click">
+                                    <i class="fas fa-search fa-lg"></i>
+                                </asp:LinkButton>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Icons -->
+                    <div class="col-auto d-flex align-items-center nav-icons-container ms-auto gap-4">
+                       
+                        <a id="btnCart" runat="server" onserverclick="BtnCart_Click"
+   class="text-decoration-none text-dark position-relative">
+
+    <i class="fas fa-shopping-cart fa-lg"></i>
+
+    <span id="lblCartCount" runat="server"
+          class="badge rounded-pill bg-danger position-absolute translate-middle-y">
+        0
+    </span>
+
+</a>
+
+<!-- LOGIN (Visible when NOT logged in) -->
+    <a id="loginLink" runat="server"
+       class="text-decoration-none text-dark d-flex align-items-center me-3"
+       href="Login.aspx">
+        <i class="fas fa-user-circle fa-lg"></i>
+        <span class="login-text d-none d-lg-inline ms-1">LOGIN</span>
+    </a>
+                        <!-- LOGOUT (Visible when logged in) -->
+    <a id="logoutLink" runat="server"
+       onserverclick="LogoutLink_Click"
+       class="text-decoration-none text-danger d-flex align-items-center"
+       style="display:none;">
+        <i class="fas fa-sign-out-alt fa-lg"></i>
+        <span class="login-text d-none d-lg-inline ms-1">LOGOUT</span>
+    </a>
+
+                        
+                    </div>
+                </div>
+
+               <!-- Secondary links -->
+                <div class="menu-separator"></div>
+<div class="d-none d-md-block secondary-links border-top border-light mt-1 pt-1 pb-1">
+    <nav class="nav justify-content-center px-4">
+        <ul class="nav justify-content-center">
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="Home.aspx">Home</a>
+            </li>
+
+            <li class="nav-item dropdown">
+    <a class="nav-link text-dark fw-bold dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        Categories
+    </a>
+
+    <ul class="dropdown-menu">
+
+        <li><a class="dropdown-item" href="Products.aspx?category=Steel">Steel</a></li>
+        <li><a class="dropdown-item" href="Products.aspx?category=Cement">Cement</a></li>
+        <li><a class="dropdown-item" href="Products.aspx?category=Bricks">Bricks</a></li>
+        <li><a class="dropdown-item" href="Products.aspx?category=Aggregates">Aggregates</a></li>
+        <li><a class="dropdown-item" href="Products.aspx?category=Paints">Paints</a></li>
+
+    </ul>
+</li>
+
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="Contact.aspx">Contact</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="About.aspx">About</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="Services.aspx">Services</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="Feedback.aspx">Feedback</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark fw-bold" href="Terms.aspx">Terms & Conditions</a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+
+            </div>
+        </nav>
+
+        <!-- ================= PAGE BODY ================= -->
+        <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="footer-links mt-5">
+ 
+    <div class="container">
+        <div class="row">
+            
+            <!-- My Account --><div class="col-md-3 col-6 mb-4">
+                <h5 class="text-white mb-3">MY ACCOUNT</h5>
+                <a href="#">Dashboard</a>
+                <a href="#">My Orders</a>
+                <a href="#">My Cart</a>
+               
+            </div>
+
+            <!-- POLICIES --><div class="col-md-3 col-6 mb-4">
+                <h5 class="text-white mb-3">CONST. POLICIES</h5>
+                
+                <a href="#">Terms & Conditions</a>
+            </div>
+
+            <!-- Contact Us --><div class="col-md-3 col-12 mb-4">
+                <h5 class="text-white mb-3">CONTACT US</h5>
+                <p class="small mb-1">i-home building materials private limited</p>
+                <p class="small mb-1">Plot No. 12-1-316, Street No. 11/1</p>
+                <p class="small mb-1">Vijaynagar, Sangli, Maharashtra, India</p>
+                <a href="#" class="small d-block"><i class="fas fa-phone-alt me-1"></i> Call: 040-XXXXXXX</a>
+            </div>
+
+            <!-- Newsletter --><div class="col-md-3 col-12 mb-4">
+                <h5 class="text-white mb-3">NEWSLETTER</h5>
+                <p class="small">Signup for our mailing list to get the latest news & deals.</p>
+                <div class="input-group mb-3">
+                    <input type="email" class="form-control form-control-sm" placeholder="Enter Your Email" aria-label="Enter Your Email">
+                    <button class="btn btn-sm btn-warning" type="button">Subscribe</button>
+                </div>
+                <div class="d-flex justify-content-start mt-3">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+
+        </div>
+        <!-- Delivery and Payment icons below footer links --><div class="d-flex justify-content-around text-center py-3 border-top border-secondary mt-3">
+            <div class="text-center">
+                <i class="fas fa-truck fa-2x d-block mb-1"></i>
+                <small>FAST DELIVERY</small>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-headset fa-2x d-block mb-1"></i>
+                <small>24x7 SERVICE</small>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-credit-card fa-2x d-block mb-1"></i>
+                <small>ONLINE PAYMENT</small>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- 12. Footer Bottom Bar --><div class="footer-bottom text-center">
+    <div class="container">
+        <small>&copy; 2025 Copyright Company Name. All Rights Reserved.</small>
+    </div>
+</div>
+       
+
+    </form>
+
+<!-- JS FILES -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /* ================= EXISTING SAFE CODE ================= */
+        var btnSave = document.getElementById("btnSave");
+        if (btnSave) {
+            btnSave.addEventListener("click", function () { });
+        }
+
+        /* ================= SIDEBAR CORE ================= */
+        const openBtn = document.getElementById("openSidebar");
+        const closeBtn = document.getElementById("closeSidebar");
+        const sidebar = document.getElementById("sidebarMenu");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        function openSidebar() {
+            sidebar.classList.add("active");
+            overlay.classList.add("active");
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove("active");
+            overlay.classList.remove("active");
+        }
+
+        if (openBtn) openBtn.addEventListener("click", openSidebar);
+        if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+        if (overlay) overlay.addEventListener("click", closeSidebar);
+
+        /* ================= SUBMENU TOGGLE ================= */
+        document.querySelectorAll(".has-sub .sub-toggle").forEach(function (toggle) {
+            toggle.addEventListener("click", function () {
+                this.parentElement.classList.toggle("active");
+            });
+        });
+
+        /* ================= SWIPE TO CLOSE (MOBILE) ================= */
+        let startX = 0;
+
+        sidebar.addEventListener("touchstart", function (e) {
+            startX = e.touches[0].clientX;
+        });
+
+        sidebar.addEventListener("touchend", function (e) {
+            let endX = e.changedTouches[0].clientX;
+            if (startX - endX > 80) {
+                closeSidebar();
+            }
+        });
+
+    });
+</script>
+
+
+
+
+</body>
+</html>

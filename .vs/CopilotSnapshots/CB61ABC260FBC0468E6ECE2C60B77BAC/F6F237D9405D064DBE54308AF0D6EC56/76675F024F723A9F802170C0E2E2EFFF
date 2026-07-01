@@ -1,0 +1,85 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class ResetPassword : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // If user came here without OTP, redirect
+                if (Session["ForgotEmail"] == null)
+                {
+                    Response.Redirect("ForgotPassword.aspx");
+                }
+            }
+        }
+
+        protected void btnReset_Click(object sender, EventArgs e)
+        {
+            string newPass = txtNewPassword.Text.Trim();
+            string confirmPass = txtConfirmPassword.Text.Trim();
+
+            // Check empty
+            if (string.IsNullOrEmpty(newPass) || string.IsNullOrEmpty(confirmPass))
+            {
+                ShowAlert("Please fill all fields!");
+                return;
+            }
+
+            // Check match
+            if (newPass != confirmPass)
+            {
+                ShowAlert("Passwords do not match!");
+                return;
+            }
+
+            string email = Session["ForgotEmail"].ToString();
+
+            // Update password in DB
+            bool updated = UpdatePassword(email, newPass);
+
+            if (updated)
+            {
+                ShowAlert("Password updated successfully!");
+                Session["ForgotEmail"] = null; // clear session
+                Response.Redirect("Login.aspx");
+            }
+            else
+            {
+                ShowAlert("Error updating password. Try again.");
+            }
+        }
+
+        private bool UpdatePassword(string email, string newPassword)
+        {
+            try
+            {
+                string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+                    string query = "UPDATE Users SET Password=@Password WHERE Email=@Email";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@Password", newPassword);
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void ShowAlert(string msg)
+        {
+            Response.Write("<script>alert('" + msg.Replace("'", "\\'") + "');</script>");
+        }
+    }
+}

@@ -1,0 +1,65 @@
+﻿using MySql.Data.MySqlClient;
+using System;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class AdminLogin : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            // Hide login/profile buttons from master while admin is logging in
+            if (Master.FindControl("loginLink") != null) Master.FindControl("loginLink").Visible = false;
+            if (Master.FindControl("profileLink") != null) Master.FindControl("profileLink").Visible = false;
+        }
+
+        protected void btnAdminLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtAdminUser.Text.Trim();
+            string password = txtAdminPassword.Text.Trim();
+
+            if (username == "" || password == "")
+            {
+                Response.Write("<script>alert('Please enter username and password');</script>");
+                return;
+            }
+
+            // 👉 Update with your database
+            string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conn))
+                {
+                    con.Open();
+
+                    string query = @"SELECT COUNT(*) 
+                                     FROM Admins 
+                                     WHERE Username = @username AND Password = @password";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@password", password);
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    if (count == 1)
+                    {
+                        // SAVE ADMIN SESSION
+                        Session["AdminUser"] = username;
+
+                        Response.Redirect("AdminDashboard.aspx");
+                    }
+                    else
+                    {
+                        Response.Write("<script>alert('Invalid Admin Credentials');</script>");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write("<script>alert('SQL ERROR: " + ex.Message + "');</script>");
+            }
+        }
+    }
+}

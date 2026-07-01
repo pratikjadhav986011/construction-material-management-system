@@ -1,0 +1,277 @@
+﻿using System;
+using System.Data;
+using MySql.Data.MySqlClient;
+
+namespace ConstructionMaterialsManagement
+{
+    public partial class Payment : System.Web.UI.Page
+    {
+        string conn = "server=localhost;user=root;password=12345;database=constructiondb;SslMode=Preferred";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                if (Session["userId"] == null)
+                {
+                    Response.Redirect("Login.aspx");
+                    return;
+                }
+
+                LoadOrderSummary();
+                GenerateUPILink();
+                TogglePanels();
+            }
+        }
+
+        private void LoadOrderSummary()
+        {
+            decimal subtotal = Convert.ToDecimal(Session["CheckoutSubtotal"] ?? 0);
+            decimal delivery = Convert.ToDecimal(Session["CheckoutDelivery"] ?? 0);
+            decimal total = Convert.ToDecimal(Session["CheckoutTotal"] ?? 0);
+
+            lblSubtotal.Text = subtotal.ToString("0.00");
+            lblDelivery.Text = delivery.ToString("0.00");
+            lblTotal.Text = total.ToString("0.00");
+        }
+
+
+        private void GenerateUPILink()
+        {
+            string upiId = "pratikjadhav986011-1@okaxis";
+            string name = Uri.EscapeDataString("Construction Shop");
+            string amount = lblTotal.Text;
+
+            string upiLink = $"upi://pay?pa={upiId}&pn={name}&am={amount}&cu=INR";
+            hfUPILink.Value = upiLink;
+
+            imgQR.Src =
+                "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" +
+                Uri.EscapeDataString(upiLink);
+        }
+
+        private void TogglePanels()
+        {
+            string method = rbPayment.SelectedValue;
+            upiBox.Style["display"] = method == "UPI" ? "block" : "none";
+            cardBox.Style["display"] = method == "CARD" ? "block" : "none";
+        }
+
+        protected void rbPayment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TogglePanels();
+        }
+
+        protected void btnComplete_Click(object sender, EventArgs e)
+        {
+            if (Session["userId"] == null)
+            {
+                Response.Redirect("Login.aspx");
+                return;
+            }
+
+            string method = rbPayment.SelectedValue;
+
+            if (method == "CARD" && !ValidateCard())
+            {
+                ClientScript.RegisterStartupScript(GetType(), "cardError",
+                    "alert('Please fill card details correctly');", true);
+                return;
+            }
+
+            try
+            {
+                int orderId = SaveOrder(method);
+
+                Session.Remove("CheckoutSubtotal");
+                Session.Remove("CheckoutDelivery");
+                Session.Remove("CheckoutTotal");
+                Session.Remove("BuyNowProduct");
+
+                // Popup + Redirect
+                ClientScript.RegisterStartupScript(
+                    GetType(),
+                    "orderSuccess",
+                    "alert('Order Placed Successfully!'); window.location='Home.aspx';",
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                ClientScript.RegisterStartupScript(GetType(), "orderFail",
+                    $"alert('Error placing order: {ex.Message}');", true);
+            }
+
+        }
+
+        protected void btnPayCard_Click(object sender, EventArgs e)
+        {
+            if (!ValidateCard())
+            {
+                ClientScript.RegisterStartupScript(
+                    GetType(), "cardInvalid",
+                    "alert('Enter valid card details!');",
+                    true);
+                return;
+            }
+
+            // Demo confirmation (no real payment processed)
+            ClientScript.RegisterStartupScript(
+                GetType(), "cardPaid",
+                "alert('Card details accepted! Now click Complete Payment.');",
+                true);
+        }
+
+
+        private int SaveOrder(string paymentMethod)
+        {
+            int userId = Convert.ToInt32(Session["userId"]);
+            decimal total = Convert.ToDecimal(Session["CheckoutTotal"]);
+
+            int orderId = 0;
+
+            using (MySqlConnection con = new MySqlConnection(conn))
+            {
+                con.Open();
+                using (MySqlTransaction tran = con.BeginTransaction())
+                {
+                    try
+                    {
+                        // INSERT ORDER
+                        string insertOrder = @"
+                INSERT INTO Orders (UserID, TotalAmount, PaymentMethod, Status)
+                VALUES (@uid, @total, @method, 'Paid');
+                SELECT LAST_INSERT_ID();";
+
+                        using (MySqlCommand cmd = new MySqlCommand(insertOrder, con, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@uid", userId);
+                            cmd.Parameters.AddWithValue("@total", total);
+                            cmd.Parameters.AddWithValue("@method", paymentMethod);
+
+                            orderId = Convert.ToInt32(cmd.ExecuteScalar());
+                        }
+
+                        // ========== BUY NOW ==========
+                        if (Session["BuyNowProduct"] != null)
+                        {
+                            int pid = Convert.ToInt32(Session["BuyNowProduct"]);
+                            int qty = 1;
+
+                            // Insert order item
+                            string insertItem = @"
+                    INSERT INTO OrderItems (OrderID, ProductID, Quantity, Price)
+                    SELECT @oid, ProductID, @qty, Price 
+                    FROM Products WHERE ProductID=@pid";
+
+                            using (MySqlCommand cmd = new MySqlCommand(insertItem, con, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@oid", orderId);
+                                cmd.Parameters.AddWithValue("@pid", pid);
+                                cmd.Parameters.AddWithValue("@qty", qty);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Reduce stock
+                            string updateStock = @"
+                    UPDATE Products 
+                    SET Stock = Stock - @qty 
+                    WHERE ProductID = @pid AND Stock >= @qty";
+
+                            using (MySqlCommand cmd = new MySqlCommand(updateStock, con, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@pid", pid);
+                                cmd.Parameters.AddWithValue("@qty", qty);
+
+                                if (cmd.ExecuteNonQuery() == 0)
+                                    throw new Exception("Not enough stock for Buy Now product.");
+
+                            }
+                        }
+                        else
+                        {
+                            // ========== CART MODE ==========
+                            string cartSQL = @"
+                    SELECT c.ProductID, c.Quantity, p.Price
+                    FROM Cart c
+                    INNER JOIN Products p ON c.ProductID = p.ProductID
+                    WHERE c.UserID = @uid";
+
+                            DataTable dt = new DataTable();
+                            using (MySqlDataAdapter da = new MySqlDataAdapter(cartSQL, con))
+                            {
+                                da.SelectCommand.Parameters.AddWithValue("@uid", userId);
+                                da.Fill(dt);
+                            }
+
+                            foreach (DataRow r in dt.Rows)
+                            {
+                                int pid = Convert.ToInt32(r["ProductID"]);
+                                int qty = Convert.ToInt32(r["Quantity"]);
+                                decimal price = Convert.ToDecimal(r["Price"]);
+
+                                // Insert Into OrderItems
+                                string insertItem = @"
+                        INSERT INTO OrderItems (OrderID, ProductID, Quantity, Price)
+                        VALUES (@oid, @pid, @qty, @price)";
+
+                                using (MySqlCommand cmd = new MySqlCommand(insertItem, con, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@oid", orderId);
+                                    cmd.Parameters.AddWithValue("@pid", pid);
+                                    cmd.Parameters.AddWithValue("@qty", qty);
+                                    cmd.Parameters.AddWithValue("@price", price);
+                                    cmd.ExecuteNonQuery();
+                                }
+
+                                // Reduce stock by exact cart qty
+                                string updateStock = @"
+                        UPDATE Products 
+                        SET Stock = Stock - @qty 
+                        WHERE ProductID = @pid AND Stock >= @qty";
+
+                                using (MySqlCommand cmd = new MySqlCommand(updateStock, con, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@pid", pid);
+                                    cmd.Parameters.AddWithValue("@qty", qty);
+
+                                    if (cmd.ExecuteNonQuery() == 0)
+                                        throw new Exception("Not enough stock for product: " + pid);
+                                }
+                            }
+
+                            // Clear cart
+                            using (MySqlCommand cmd = new MySqlCommand("DELETE FROM Cart WHERE UserID=@uid", con, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        tran.Commit();
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+            }
+
+            return orderId;
+        }
+
+
+
+
+        private bool ValidateCard()
+        {
+            if (string.IsNullOrWhiteSpace(txtCardName.Text)) return false;
+            if (txtCardNumber.Text.Length != 16) return false;
+            if (txtExpiry.Text.Length != 5) return false;
+            if (txtCVV.Text.Length != 3) return false;
+
+            return true;
+        }
+    }
+}
