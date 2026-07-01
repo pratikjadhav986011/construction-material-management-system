@@ -14,7 +14,13 @@ namespace ConstructionMaterialsManagement
                 try
                 {
                     con.Open();
+
                     Response.Write("<h3 style='color:green;'>✅ Database Connection Successful!</h3>");
+
+                    // ===== ADD THIS LINE =====
+                    Response.Write(Request.QueryString["msg"]);
+                    // =========================
+
                 }
                 catch (Exception ex)
                 {
