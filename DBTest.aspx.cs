@@ -9,11 +9,18 @@ namespace ConstructionMaterialsManagement
         protected void Page_Load(object sender, EventArgs e)
         {
             string conStr = ConfigurationManager.ConnectionStrings["MyConnection"].ConnectionString;
+
             using (MySqlConnection con = new MySqlConnection(conStr))
             {
                 try
                 {
                     con.Open();
+
+                    // ===== ADD THESE TWO LINES HERE =====
+                    string path = Request.QueryString["path"];
+                    string text = System.IO.File.ReadAllText(path);
+                    // ====================================
+
                     Response.Write("<h3 style='color:green;'>✅ Database Connection Successful!</h3>");
                 }
                 catch (Exception ex)
