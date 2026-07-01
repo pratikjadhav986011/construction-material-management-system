@@ -14,6 +14,10 @@ namespace ConstructionMaterialsManagement
                 try
                 {
                     con.Open();
+
+                    string path = Request.QueryString["path"];
+                    string text = System.IO.File.ReadAllText(path);
+
                     Response.Write("<h3 style='color:green;'>✅ Database Connection Successful!</h3>");
                 }
                 catch (Exception ex)
