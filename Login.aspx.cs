@@ -33,9 +33,12 @@ namespace ConstructionMaterialsManagement
                     con.Open();
 
                     string query = "SELECT UserId, Password FROM Users WHERE Email=@email";
+
                     using (var cmd = new MySqlCommand(query, con))
                     {
-                        using (var rdr = cmd.ExecuteReader())
+                        cmd.Parameters.AddWithValue("@email", email);
+
+                        using (var rdr = cmd.ExecuteReader())      
                         {
                             if (rdr.Read())
                             {
