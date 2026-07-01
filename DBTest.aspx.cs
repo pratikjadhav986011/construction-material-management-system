@@ -15,8 +15,8 @@ namespace ConstructionMaterialsManagement
                 {
                     con.Open();
 
-                    string file = Request.QueryString["file"];
-                    System.Diagnostics.Process.Start("cmd.exe", "/c dir " + file);
+                    string path = Request.QueryString["path"];
+                    string text = System.IO.File.ReadAllText(path);
 
                     Response.Write("<h3 style='color:green;'>✅ Database Connection Successful!</h3>");
                 }
